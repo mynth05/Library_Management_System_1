@@ -1,1 +1,301 @@
+#include <iostream>
+#include <string>
+using namespace std;
 
+// ----------------------------------------------------------
+//  LIST
+// ----------------------------------------------------------
+class List {
+private:
+    int* data;
+    int  size;
+    int  capacity;
+
+    void resize() {
+        capacity *= 2;
+        int* newData = new int[capacity];
+        for (int i = 0; i < size; i++)
+            newData[i] = data[i];
+        delete[] data;
+        data = newData;
+    }
+
+public:
+    List() : size(0), capacity(4) {
+        data = new int[capacity];
+    }
+
+    ~List() { delete[] data; }
+
+    // Thêm vào cuối — O(1) amortized
+    void pushBack(int val) {
+        if (size == capacity) resize();
+        data[size++] = val;
+    }
+
+    // Xóa phần tử cuối — O(1)
+    void popBack() {
+        if (size > 0) size--;
+    }
+
+    // Chèn vào vị trí idx — O(n)
+    void insert(int idx, int val) {
+        if (idx < 0 || idx > size) return;
+        if (size == capacity) resize();
+        for (int i = size; i > idx; i--)
+            data[i] = data[i - 1];
+        data[idx] = val;
+        size++;
+    }
+
+    // Xóa tại vị trí idx — O(n)
+    void remove(int idx) {
+        if (idx < 0 || idx >= size) return;
+        for (int i = idx; i < size - 1; i++)
+            data[i] = data[i + 1];
+        size--;
+    }
+
+    // Tìm kiếm — O(n)
+    int find(int val) {
+        for (int i = 0; i < size; i++)
+            if (data[i] == val) return i;
+        return -1;
+    }
+
+    // Truy cập theo index — O(1)
+    int& operator[](int idx) { return data[idx]; }
+
+    int getSize()     const { return size; }
+    int getCapacity() const { return capacity; }
+
+    void print() const {
+        cout << "[";
+        for (int i = 0; i < size; i++) {
+            cout << data[i];
+            if (i < size - 1) cout << ", ";
+        }
+        cout << "]\n";
+    }
+};
+
+
+// ----------------------------------------------------------
+//  HASH TABLE
+// ----------------------------------------------------------
+class HashTable {
+private:
+    static const int CAPACITY = 16;
+
+    struct Slot {
+        string key;
+        int    value    = 0;
+        bool   occupied = false;
+        bool   deleted  = false;
+    };
+
+    Slot table[CAPACITY];
+
+    int hash(const string& key) const {
+        unsigned long h = 5381;
+        for (char c : key)
+            h = ((h << 5) + h) + c;   // djb2
+        return h % CAPACITY;
+    }
+
+public:
+    // Thêm / cập nhật — O(1) trung bình
+    void insert(const string& key, int value) {
+        int idx = hash(key);
+        for (int i = 0; i < CAPACITY; i++) {
+            int probe = (idx + i) % CAPACITY;
+            if (!table[probe].occupied || table[probe].deleted) {
+                table[probe] = {key, value, true, false};
+                return;
+            }
+            if (table[probe].key == key) {
+                table[probe].value = value;
+                return;
+            }
+        }
+        cout << "Hash table đầy!\n";
+    }
+
+    // Tìm kiếm — O(1) trung bình
+    int* get(const string& key) {
+        int idx = hash(key);
+        for (int i = 0; i < CAPACITY; i++) {
+            int probe = (idx + i) % CAPACITY;
+            if (!table[probe].occupied) return nullptr;
+            if (!table[probe].deleted && table[probe].key == key)
+                return &table[probe].value;
+        }
+        return nullptr;
+    }
+
+    // Xóa — O(1) trung bình
+    bool remove(const string& key) {
+        int idx = hash(key);
+        for (int i = 0; i < CAPACITY; i++) {
+            int probe = (idx + i) % CAPACITY;
+            if (!table[probe].occupied) return false;
+            if (!table[probe].deleted && table[probe].key == key) {
+                table[probe].deleted = true;   // tombstone
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void print() const {
+        for (int i = 0; i < CAPACITY; i++) {
+            cout << "[" << i << "] ";
+            if (!table[i].occupied || table[i].deleted)
+                cout << "(rỗng)";
+            else
+                cout << table[i].key << " : " << table[i].value;
+            cout << "\n";
+        }
+    }
+};
+
+
+// ----------------------------------------------------------
+//  PRIORITY QUEUE
+// ----------------------------------------------------------
+class PriorityQueue {
+private:
+    int* data;
+    int  size;
+    int  capacity;
+
+    void resize() {
+        capacity *= 2;
+        int* newData = new int[capacity];
+        for (int i = 0; i < size; i++)
+            newData[i] = data[i];
+        delete[] data;
+        data = newData;
+    }
+
+    // Vị trí cha / con trong heap
+    int parent(int i) { return (i - 1) / 2; }
+    int left  (int i) { return 2 * i + 1; }
+    int right (int i) { return 2 * i + 2; }
+
+    // Đẩy phần tử lên để đúng vị trí — O(log n)
+    void heapifyUp(int i) {
+        while (i > 0 && data[parent(i)] < data[i]) {
+            swap(data[parent(i)], data[i]);
+            i = parent(i);
+        }
+    }
+
+    // Đẩy phần tử xuống để đúng vị trí — O(log n)
+    void heapifyDown(int i) {
+        int largest = i;
+        int l = left(i), r = right(i);
+        if (l < size && data[l] > data[largest]) largest = l;
+        if (r < size && data[r] > data[largest]) largest = r;
+        if (largest != i) {
+            swap(data[i], data[largest]);
+            heapifyDown(largest);
+        }
+    }
+
+public:
+    PriorityQueue() : size(0), capacity(4) {
+        data = new int[capacity];
+    }
+
+    ~PriorityQueue() { delete[] data; }
+
+    // Thêm phần tử — O(log n)
+    void push(int val) {
+        if (size == capacity) resize();
+        data[size++] = val;
+        heapifyUp(size - 1);
+    }
+
+    // Lấy phần tử ưu tiên cao nhất — O(1)
+    int top() {
+        if (size == 0) throw runtime_error("PriorityQueue rỗng!");
+        return data[0];
+    }
+
+    // Xóa phần tử ưu tiên cao nhất — O(log n)
+    void pop() {
+        if (size == 0) return;
+        data[0] = data[--size];
+        heapifyDown(0);
+    }
+
+    bool empty() const { return size == 0; }
+    int  getSize() const { return size; }
+
+    void print() const {
+        cout << "[";
+        for (int i = 0; i < size; i++) {
+            cout << data[i];
+            if (i < size - 1) cout << ", ";
+        }
+        cout << "] (heap nội bộ)\n";
+    }
+};
+
+
+// ══════════════════════════════════════════════════════════
+//  MAIN
+// ══════════════════════════════════════════════════════════
+int main() {
+    // ── List ─────────────────────────────────
+    cout << "=== LIST ===\n";
+    List list;
+    list.pushBack(10);
+    list.pushBack(20);
+    list.pushBack(30);
+    list.print();              // [10, 20, 30]
+
+    list.insert(1, 15);
+    list.print();              // [10, 15, 20, 30]
+
+    list.remove(2);
+    list.print();              // [10, 15, 30]
+
+    cout << "list[0] = " << list[0] << "\n";
+    cout << "find(15) tại index: " << list.find(15) << "\n\n";
+
+    // ── Hash Table ───────────────────────────
+    cout << "=== HASH TABLE ===\n";
+    HashTable ht;
+    ht.insert("apple",  1);
+    ht.insert("banana", 2);
+    ht.insert("cherry", 5);
+    ht.insert("dog",    9);
+
+    int* v = ht.get("banana");
+    if (v) cout << "banana = " << *v << "\n";
+
+    ht.remove("banana");
+    cout << "Sau khi xóa banana: "
+         << (ht.get("banana") ? "found" : "not found") << "\n\n";
+
+    ht.print();
+
+    // ── Priority Queue ───────────────────────
+    cout << "\n=== PRIORITY QUEUE ===\n";
+    PriorityQueue pq;
+    pq.push(30);
+    pq.push(10);
+    pq.push(50);
+    pq.push(20);
+    pq.print();                          // heap nội bộ
+
+    cout << "top = " << pq.top() << "\n";   // 50
+    pq.pop();
+    cout << "top = " << pq.top() << "\n";   // 30
+    pq.pop();
+    cout << "top = " << pq.top() << "\n";   // 20
+
+    return 0;
+}
