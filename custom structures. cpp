@@ -1,422 +1,61 @@
 #include <iostream>
 #include <string>
-#include <algorithm>   // std::copy
-#include <stdexcept>   // std::out_of_range
+#include <algorithm>
+#include <stdexcept>
 using namespace std;
- 
-//  LIST (mảng động)
 
+// ===================== LIST =====================
+template <typename T>
 class List {
 private:
-    int* data;
-    int  size;
-    int  capacity;
- 
-    void resize() {
-        int newCapacity = (capacity == 0) ? 4 : capacity * 2;
-        int* newData = new int[newCapacity];
-        std::copy(data, data + size, newData);
-        delete[] data;
-        data = newData;
-        capacity = newCapacity;
-    }
- 
-public:
-    List() : data(new int[4]), size(0), capacity(4) {}
- 
-    // Copy constructor
-    List(const List& other)
-        : data(new int[other.capacity]),
-          size(other.size),
-          capacity(other.capacity) {
-        std::copy(other.data, other.data + size, data);
-    }
- 
-    // Copy assignment (exception-safe)
-    List& operator=(const List& other) {
-        if (this == &other) return *this;
-        int* newData = new int[other.capacity];
-        std::copy(other.data, other.data + other.size, newData);
-        delete[] data;
-        data     = newData;
-        size     = other.size;
-        capacity = other.capacity;
-        return *this;
-    }
- 
-    // Move constructor
-    List(List&& other) noexcept
-        : data(other.data), size(other.size), capacity(other.capacity) {
-        other.data     = nullptr;
-        other.size     = 0;
-        other.capacity = 0;
-    }
- 
-    // Move assignment
-    List& operator=(List&& other) noexcept {
-        if (this == &other) return *this;
-        delete[] data;
-        data           = other.data;
-        size           = other.size;
-        capacity       = other.capacity;
-        other.data     = nullptr;
-        other.size     = 0;
-        other.capacity = 0;
-        return *this;
-    }
- 
-    ~List() { delete[] data; }
- 
-    // Thêm vào cuối — O(1) amortized
-    void pushBack(int val) {
-        if (size == capacity) resize();
-        data[size++] = val;
-    }
- 
-    // Xóa phần tử cuối — O(1)
-    void popBack() {
-        if (size > 0) --size;
-    }
- 
-    // Chèn vào vị trí idx — O(n)
-    void insert(int idx, int val) {
-        if (idx < 0 || idx > size)
-            throw out_of_range("Index out of range");
-        if (size == capacity) resize();
-        for (int i = size; i > idx; --i)
-            data[i] = data[i - 1];
-        data[idx] = val;
-        ++size;
-    }
- 
-    // Xóa tại vị trí idx — O(n)
-    void remove(int idx) {
-        if (idx < 0 || idx >= size)
-            throw out_of_range("Index out of range");
-        for (int i = idx; i < size - 1; ++i)
-            data[i] = data[i + 1];
-        --size;
-    }
- 
-    // Tìm kiếm — O(n)
-    int find(int val) const {
-        for (int i = 0; i < size; ++i)
-            if (data[i] == val) return i;
-        return -1;
-    }
- 
-    // Truy cập theo index — O(1)
-    int& operator[](int idx) {
-        if (idx < 0 || idx >= size)
-            throw out_of_range("Index out of range");
-        return data[idx];
-    }
- 
-    const int& operator[](int idx) const {
-        if (idx < 0 || idx >= size)
-            throw out_of_range("Index out of range");
-        return data[idx];
-    }
- 
-    int getSize()     const { return size; }
-    int getCapacity() const { return capacity; }
- 
-    void print() const {
-        cout << "[";
-        for (int i = 0; i < size; ++i) {
-            cout << data[i];
-            if (i < size - 1) cout << ", ";
-        }
-        cout << "]\n";
-    }
-};
- 
- 
-
-//  HASH TABLE (open addressing + linear probing + rehash)
-
-class HashTable {
-private:
-    struct Slot {
-        string key;
-        int    value    = 0;
-        bool   occupied = false;
-        bool   deleted  = false;
-    };
- 
-    Slot* table;
-    int   capacity;
-    int   count;      // số slot đã từng dùng
-    int   liveCount;  // số phần tử còn tồn tại
- 
-    int hash(const string& key, int cap) const {
-        unsigned long h = 5381;
-        for (char c : key)
-            h = ((h << 5) + h) + c;   // djb2
-        return static_cast<int>(h % cap);
-    }
- 
-    // Chỉ dùng trong rehash, không kiểm tra load factor
-    void insertDirect(const string& key, int value) {
-        int idx = hash(key, capacity);
-        for (int i = 0; i < capacity; ++i) {
-            int probe = (idx + i) % capacity;
-            if (!table[probe].occupied) {
-                table[probe] = {key, value, true, false};
-                ++count;
-                ++liveCount;
-                return;
-            }
-        }
-    }
- 
-    void rehash() {
-        Slot* oldTable    = table;
-        int   oldCapacity = capacity;
-        capacity  *= 2;
-        table      = new Slot[capacity];
-        count      = 0;
-        liveCount  = 0;
-        for (int i = 0; i < oldCapacity; ++i)
-            if (oldTable[i].occupied && !oldTable[i].deleted)
-                insertDirect(oldTable[i].key, oldTable[i].value);
-        delete[] oldTable;
-    }
- 
-public:
-    HashTable() : capacity(16), count(0), liveCount(0) {
-        table = new Slot[capacity];
-    }
- 
-    // Copy constructor
-    HashTable(const HashTable& other)
-        : capacity(other.capacity),
-          count(other.count),
-          liveCount(other.liveCount) {
-        table = new Slot[capacity];
-        for (int i = 0; i < capacity; ++i)
-            table[i] = other.table[i];
-    }
- 
-    // Copy assignment
-    HashTable& operator=(const HashTable& other) {
-        if (this == &other) return *this;
-        Slot* newTable = new Slot[other.capacity];
-        for (int i = 0; i < other.capacity; ++i)
-            newTable[i] = other.table[i];
-        delete[] table;
-        table     = newTable;
-        capacity  = other.capacity;
-        count     = other.count;
-        liveCount = other.liveCount;
-        return *this;
-    }
- 
-    // Move constructor
-    HashTable(HashTable&& other) noexcept
-        : table(other.table),
-          capacity(other.capacity),
-          count(other.count),
-          liveCount(other.liveCount) {
-        other.table     = nullptr;
-        other.capacity  = 0;
-        other.count     = 0;
-        other.liveCount = 0;
-    }
- 
-    // Move assignment
-    HashTable& operator=(HashTable&& other) noexcept {
-        if (this == &other) return *this;
-        delete[] table;
-        table           = other.table;
-        capacity        = other.capacity;
-        count           = other.count;
-        liveCount       = other.liveCount;
-        other.table     = nullptr;
-        other.capacity  = 0;
-        other.count     = 0;
-        other.liveCount = 0;
-        return *this;
-    }
- 
-    ~HashTable() { delete[] table; }
- 
-    // Thêm / cập nhật 
-    void insert(const string& key, int value) {
-        if ((count + 1.0) / capacity > 0.7)
-            rehash();
- 
-        int idx           = hash(key, capacity);
-        int firstTombstone = -1;
- 
-        for (int i = 0; i < capacity; ++i) {
-            int probe = (idx + i) % capacity;
- 
-            if (!table[probe].occupied) {
-                int pos = (firstTombstone != -1) ? firstTombstone : probe;
-                table[pos] = {key, value, true, false};
-                if (firstTombstone == -1) ++count;
-                ++liveCount;
-                return;
-            }
- 
-            if (table[probe].deleted) {
-                if (firstTombstone == -1) firstTombstone = probe;
-                continue;
-            }
- 
-            if (table[probe].key == key) {
-                table[probe].value = value;
-                return;
-            }
-        }
- 
-        if (firstTombstone != -1) {
-            table[firstTombstone] = {key, value, true, false};
-            ++liveCount;
-        }
-    }
- 
-    // Tìm kiếm 
-    int* get(const string& key) {
-        int idx = hash(key, capacity);
-        for (int i = 0; i < capacity; ++i) {
-            int probe = (idx + i) % capacity;
-            if (!table[probe].occupied) return nullptr;
-            if (!table[probe].deleted && table[probe].key == key)
-                return &table[probe].value;
-        }
-        return nullptr;
-    }
- 
-    const int* get(const string& key) const {
-        int idx = hash(key, capacity);
-        for (int i = 0; i < capacity; ++i) {
-            int probe = (idx + i) % capacity;
-            if (!table[probe].occupied) return nullptr;
-            if (!table[probe].deleted && table[probe].key == key)
-                return &table[probe].value;
-        }
-        return nullptr;
-    }
- 
-    // Xóa 
-    bool remove(const string& key) {
-        int idx = hash(key, capacity);
-        for (int i = 0; i < capacity; ++i) {
-            int probe = (idx + i) % capacity;
-            if (!table[probe].occupied) return false;
-            if (!table[probe].deleted && table[probe].key == key) {
-                table[probe].deleted = true;
-                --liveCount;
-                return true;
-            }
-        }
-        return false;
-    }
- 
-    int getSize()     const { return liveCount; }
-    int getCapacity() const { return capacity; }
- 
-    void print() const {
-        for (int i = 0; i < capacity; ++i) {
-            cout << "[" << i << "] ";
-            if (!table[i].occupied)
-                cout << "(empty)";
-            else if (table[i].deleted)
-                cout << "(deleted)";
-            else
-                cout << table[i].key << " : " << table[i].value;
-            cout << '\n';
-        }
-    }
-};
- 
- 
-//  PRIORITY QUEUE (max-heap)
-
-class PriorityQueue {
-private:
-    int* data;
+    T* data;
     int size;
     int capacity;
 
     void resize() {
         int newCapacity = (capacity == 0) ? 4 : capacity * 2;
+        T* newData = new T[newCapacity];
 
-        int* newData = new int[newCapacity];
-        std::copy(data, data + size, newData);
+        for (int i = 0; i < size; i++)
+            newData[i] = data[i];
 
         delete[] data;
         data = newData;
         capacity = newCapacity;
     }
 
-    int parent(int i) const { return (i - 1) / 2; }
-    int left(int i)   const { return 2 * i + 1; }
-    int right(int i)  const { return 2 * i + 2; }
-
-    void heapifyUp(int i) {
-        while (i > 0 && data[parent(i)] < data[i]) {
-            std::swap(data[parent(i)], data[i]);
-            i = parent(i);
-        }
-    }
-
-    void heapifyDown(int i) {
-        while (true) {
-            int largest = i;
-            int l = left(i);
-            int r = right(i);
-
-            if (l < size && data[l] > data[largest])
-                largest = l;
-
-            if (r < size && data[r] > data[largest])
-                largest = r;
-
-            if (largest == i)
-                break;
-
-            std::swap(data[i], data[largest]);
-            i = largest;
-        }
-    }
-
 public:
-    PriorityQueue()
-        : data(new int[4]),
-          size(0),
-          capacity(4) {}
+    List() : data(new T[4]), size(0), capacity(4) {}
 
     // Copy constructor
-    PriorityQueue(const PriorityQueue& other)
-        : data(new int[other.capacity]),
+    List(const List& other)
+        : data(new T[other.capacity]),
           size(other.size),
           capacity(other.capacity) {
 
-        std::copy(other.data, other.data + size, data);
+        for (int i = 0; i < size; i++)
+            data[i] = other.data[i];
     }
 
     // Copy assignment
-    PriorityQueue& operator=(const PriorityQueue& other) {
+    List& operator=(const List& other) {
         if (this == &other)
             return *this;
 
-        int* newData = new int[other.capacity];
-        std::copy(other.data, other.data + other.size, newData);
-
         delete[] data;
 
-        data = newData;
-        size = other.size;
         capacity = other.capacity;
+        size = other.size;
+        data = new T[capacity];
+
+        for (int i = 0; i < size; i++)
+            data[i] = other.data[i];
 
         return *this;
     }
 
     // Move constructor
-    PriorityQueue(PriorityQueue&& other) noexcept
+    List(List&& other) noexcept
         : data(other.data),
           size(other.size),
           capacity(other.capacity) {
@@ -427,7 +66,7 @@ public:
     }
 
     // Move assignment
-    PriorityQueue& operator=(PriorityQueue&& other) noexcept {
+    List& operator=(List&& other) noexcept {
         if (this == &other)
             return *this;
 
@@ -444,43 +83,44 @@ public:
         return *this;
     }
 
-    ~PriorityQueue() {
+    ~List() {
         delete[] data;
     }
 
-    // O(log n)
-    void push(int val) {
+    void pushBack(const T& value) {
         if (size == capacity)
             resize();
 
-        data[size] = val;
-        ++size;
-
-        heapifyUp(size - 1);
+        data[size++] = value;
     }
 
-    // O(1)
-    int top() const {
-        if (empty())
-            throw runtime_error("PriorityQueue rong!");
-
-        return data[0];
+    void popBack() {
+        if (size > 0)
+            --size;
     }
 
-    // O(log n)
-    void pop() {
-        if (empty())
-            return;
+    void remove(int idx) {
+        if (idx < 0 || idx >= size)
+            throw out_of_range("Index out of range");
 
-        data[0] = data[size - 1];
+        for (int i = idx; i < size - 1; i++)
+            data[i] = data[i + 1];
+
         --size;
-
-        if (!empty())
-            heapifyDown(0);
     }
 
-    bool empty() const {
-        return size == 0;
+    T& operator[](int idx) {
+        if (idx < 0 || idx >= size)
+            throw out_of_range("Index out of range");
+
+        return data[idx];
+    }
+
+    const T& operator[](int idx) const {
+        if (idx < 0 || idx >= size)
+            throw out_of_range("Index out of range");
+
+        return data[idx];
     }
 
     int getSize() const {
@@ -493,11 +133,268 @@ public:
 
     void print() const {
         cout << "[";
-        for (int i = 0; i < size; ++i) {
+
+        for (int i = 0; i < size; i++) {
             cout << data[i];
+
             if (i < size - 1)
                 cout << ", ";
         }
-        cout << "] (heap noi bo)\n";
+
+        cout << "]\n";
+    }
+};
+
+// ===================== HASH TABLE =====================
+struct Entry {
+    string key;
+    int value;
+};
+ostream& operator<<(ostream& os, const Entry& e) {
+    os << "(" << e.key << ", " << e.value << ")";
+    return os;
+}
+class HashTable {
+private:
+    List<Entry>* buckets;
+    int capacity;
+    int liveCount;
+
+    int hash(const string& key, int cap) const {
+        unsigned long h = 5381;
+
+        for (char c : key)
+            h = ((h << 5) + h) + c;
+
+        return h % cap;
+    }
+
+    int hash(const string& key) const {
+        return hash(key, capacity);
+    }
+
+    void rehash() {
+        int newCapacity = capacity * 2;
+        List<Entry>* newBuckets = new List<Entry>[newCapacity];
+
+        for (int i = 0; i < capacity; i++) {
+            for (int j = 0; j < buckets[i].getSize(); j++) {
+                const Entry& e = buckets[i][j];
+                int idx = hash(e.key, newCapacity);
+                newBuckets[idx].pushBack(e);
+            }
+        }
+
+        delete[] buckets;
+        buckets = newBuckets;
+        capacity = newCapacity;
+    }
+
+public:
+    HashTable(int cap = 16)
+        : capacity(cap), liveCount(0) {
+        buckets = new List<Entry>[capacity];
+    }
+
+    // Không cho phép copy vì quản lý raw pointer
+    HashTable(const HashTable& other)
+    : capacity(other.capacity),
+      liveCount(other.liveCount) {
+
+    buckets = new List<Entry>[capacity];
+
+    for (int i = 0; i < capacity; i++)
+        buckets[i] = other.buckets[i];
+}
+
+    HashTable& operator=(const HashTable& other) {
+        if (this == &other)
+            return *this;
+    
+        delete[] buckets;
+    
+        capacity = other.capacity;
+        liveCount = other.liveCount;
+    
+        buckets = new List<Entry>[capacity];
+    
+        for (int i = 0; i < capacity; i++)
+            buckets[i] = other.buckets[i];
+    
+        return *this;
+    }
+    
+    HashTable(HashTable&& other) noexcept
+        : buckets(other.buckets),
+          capacity(other.capacity),
+          liveCount(other.liveCount) {
+    
+        other.buckets = nullptr;
+        other.capacity = 0;
+        other.liveCount = 0;
+    }
+    
+    HashTable& operator=(HashTable&& other) noexcept {
+        if (this == &other)
+            return *this;
+    
+        delete[] buckets;
+    
+        buckets = other.buckets;
+        capacity = other.capacity;
+        liveCount = other.liveCount;
+    
+        other.buckets = nullptr;
+        other.capacity = 0;
+        other.liveCount = 0;
+    
+        return *this;
+    }
+
+    ~HashTable() {
+        delete[] buckets;
+    }
+
+    void insert(const string& key, int value) {
+        if ((double)(liveCount+1) / capacity > 0.75)
+            rehash();
+
+        int idx = hash(key);
+
+        for (int i = 0; i < buckets[idx].getSize(); i++) {
+            if (buckets[idx][i].key == key) {
+                buckets[idx][i].value = value;
+                return;
+            }
+        }
+
+        buckets[idx].pushBack({key, value});
+        ++liveCount;
+    }
+
+    int* get(const string& key) {
+        int idx = hash(key);
+
+        for (int i = 0; i < buckets[idx].getSize(); i++) {
+            if (buckets[idx][i].key == key)
+                return &buckets[idx][i].value;
+        }
+
+        return nullptr;
+    }
+    const int* get(const string& key) const {
+        int idx = hash(key);
+        for (int i = 0; i < buckets[idx].getSize(); i++) {
+            if (buckets[idx][i].key == key)
+                return &buckets[idx][i].value;
+        }
+        return nullptr;
+    }
+    bool remove(const string& key) {
+        int idx = hash(key);
+
+        for (int i = 0; i < buckets[idx].getSize(); i++) {
+            if (buckets[idx][i].key == key) {
+                buckets[idx].remove(i);
+                --liveCount;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    int getSize() const {
+        return liveCount;
+    }
+
+    void print() const {
+        for (int i = 0; i < capacity; i++) {
+            cout << "[" << i << "] ";
+
+            for (int j = 0; j < buckets[i].getSize(); j++) {
+                cout << "("
+                     << buckets[i][j].key
+                     << ", "
+                     << buckets[i][j].value
+                     << ") ";
+            }
+
+            cout << '\n';
+        }
+    }
+};
+
+// ===================== PRIORITY QUEUE (max-heap) =====================
+class PriorityQueue {
+private:
+    List<int> data;
+
+    int parent(int i) const { return (i - 1) / 2; }
+    int left(int i)   const { return 2 * i + 1; }
+    int right(int i)  const { return 2 * i + 2; }
+
+    void heapifyUp(int i) {
+        while (i > 0 && data[parent(i)] < data[i]) {
+            swap(data[parent(i)], data[i]);
+            i = parent(i);
+        }
+    }
+
+    void heapifyDown(int i) {
+        int n = data.getSize();
+
+        while (true) {
+            int largest = i;
+            int l = left(i);
+            int r = right(i);
+
+            if (l < n && data[l] > data[largest])
+                largest = l;
+
+            if (r < n && data[r] > data[largest])
+                largest = r;
+
+            if (largest == i)
+                break;
+
+            swap(data[i], data[largest]);
+            i = largest;
+        }
+    }
+
+public:
+    void push(int val) {
+        data.pushBack(val);
+        heapifyUp(data.getSize() - 1);
+    }
+
+    int top() const {
+        if (empty())
+            throw runtime_error("PriorityQueue rong!");
+
+        return data[0];
+    }
+
+    void pop() {
+        if (empty()) return;
+
+        data[0] = data[data.getSize() - 1];
+        data.popBack();
+
+        if (!empty())
+            heapifyDown(0);
+    }
+
+    bool empty() const {
+        return data.getSize() == 0;
+    }
+
+    int getSize() const {
+        return data.getSize();
+    }
+
+    void print() const {
+        data.print();
     }
 };
