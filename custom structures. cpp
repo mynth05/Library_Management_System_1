@@ -244,7 +244,7 @@ public:
  
     // Thêm / cập nhật — O(1) trung bình
     void insert(const string& key, int value) {
-        if ((liveCount + 1.0) / capacity > 0.7)   // dùng liveCount, không phải count
+        if ((count + 1.0) / capacity > 0.7)
             rehash();
  
         int idx           = hash(key, capacity);
@@ -340,79 +340,166 @@ public:
 class PriorityQueue {
 private:
     int* data;
-    int  size;
-    int  capacity;
- 
+    int size;
+    int capacity;
+
     void resize() {
-        capacity *= 2;
-        int* newData = new int[capacity];
-        for (int i = 0; i < size; i++)
-            newData[i] = data[i];
+        int newCapacity = (capacity == 0) ? 4 : capacity * 2;
+
+        int* newData = new int[newCapacity];
+        std::copy(data, data + size, newData);
+
         delete[] data;
         data = newData;
+        capacity = newCapacity;
     }
- 
-    // Vị trí cha / con trong heap
-    int parent(int i) { return (i - 1) / 2; }
-    int left  (int i) { return 2 * i + 1; }
-    int right (int i) { return 2 * i + 2; }
- 
-    // Đẩy phần tử lên để đúng vị trí — O(log n)
+
+    int parent(int i) const { return (i - 1) / 2; }
+    int left(int i)   const { return 2 * i + 1; }
+    int right(int i)  const { return 2 * i + 2; }
+
     void heapifyUp(int i) {
         while (i > 0 && data[parent(i)] < data[i]) {
-            swap(data[parent(i)], data[i]);
+            std::swap(data[parent(i)], data[i]);
             i = parent(i);
         }
     }
- 
-    // Đẩy phần tử xuống để đúng vị trí — O(log n)
+
     void heapifyDown(int i) {
-        int largest = i;
-        int l = left(i), r = right(i);
-        if (l < size && data[l] > data[largest]) largest = l;
-        if (r < size && data[r] > data[largest]) largest = r;
-        if (largest != i) {
-            swap(data[i], data[largest]);
-            heapifyDown(largest);
+        while (true) {
+            int largest = i;
+            int l = left(i);
+            int r = right(i);
+
+            if (l < size && data[l] > data[largest])
+                largest = l;
+
+            if (r < size && data[r] > data[largest])
+                largest = r;
+
+            if (largest == i)
+                break;
+
+            std::swap(data[i], data[largest]);
+            i = largest;
         }
     }
- 
+
 public:
-    PriorityQueue() : size(0), capacity(4) {
-        data = new int[capacity];
+    PriorityQueue()
+        : data(new int[4]),
+          size(0),
+          capacity(4) {}
+
+    // Copy constructor
+    PriorityQueue(const PriorityQueue& other)
+        : data(new int[other.capacity]),
+          size(other.size),
+          capacity(other.capacity) {
+
+        std::copy(other.data, other.data + size, data);
     }
- 
-    ~PriorityQueue() { delete[] data; }
- 
-    // Thêm phần tử — O(log n)
+
+    // Copy assignment
+    PriorityQueue& operator=(const PriorityQueue& other) {
+        if (this == &other)
+            return *this;
+
+        int* newData = new int[other.capacity];
+        std::copy(other.data, other.data + other.size, newData);
+
+        delete[] data;
+
+        data = newData;
+        size = other.size;
+        capacity = other.capacity;
+
+        return *this;
+    }
+
+    // Move constructor
+    PriorityQueue(PriorityQueue&& other) noexcept
+        : data(other.data),
+          size(other.size),
+          capacity(other.capacity) {
+
+        other.data = nullptr;
+        other.size = 0;
+        other.capacity = 0;
+    }
+
+    // Move assignment
+    PriorityQueue& operator=(PriorityQueue&& other) noexcept {
+        if (this == &other)
+            return *this;
+
+        delete[] data;
+
+        data = other.data;
+        size = other.size;
+        capacity = other.capacity;
+
+        other.data = nullptr;
+        other.size = 0;
+        other.capacity = 0;
+
+        return *this;
+    }
+
+    ~PriorityQueue() {
+        delete[] data;
+    }
+
+    // O(log n)
     void push(int val) {
-        if (size == capacity) resize();
-        data[size++] = val;
+        if (size == capacity)
+            resize();
+
+        data[size] = val;
+        ++size;
+
         heapifyUp(size - 1);
     }
- 
-    // Lấy phần tử ưu tiên cao nhất — O(1)
-    int top() {
-        if (size == 0) throw runtime_error("PriorityQueue rỗng!");
+
+    // O(1)
+    int top() const {
+        if (empty())
+            throw runtime_error("PriorityQueue rong!");
+
         return data[0];
     }
- 
-    // Xóa phần tử ưu tiên cao nhất — O(log n)
+
+    // O(log n)
     void pop() {
-        if (size == 0) return;
-        data[0] = data[--size];
-        heapifyDown(0);
+        if (empty())
+            return;
+
+        data[0] = data[size - 1];
+        --size;
+
+        if (!empty())
+            heapifyDown(0);
     }
- 
-    bool empty() const { return size == 0; }
-    int  getSize() const { return size; }
- 
+
+    bool empty() const {
+        return size == 0;
+    }
+
+    int getSize() const {
+        return size;
+    }
+
+    int getCapacity() const {
+        return capacity;
+    }
+
     void print() const {
         cout << "[";
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size; ++i) {
             cout << data[i];
-            if (i < size - 1) cout << ", ";
+            if (i < size - 1)
+                cout << ", ";
         }
-        cout << "] (heap nội bộ)\n";
+        cout << "] (heap noi bo)\n";
     }
 };
