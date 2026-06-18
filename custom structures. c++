@@ -242,56 +242,5 @@ public:
         cout << "] (heap nội bộ)\n";
     }
 };
-
-int main() {
-    // ------------------ List ------------------
-    cout << "=== LIST ===\n";
-    List list;
-    list.pushBack(10);
-    list.pushBack(20);
-    list.pushBack(30);
-    list.print();              // [10, 20, 30]
-
-    list.insert(1, 15);
-    list.print();              // [10, 15, 20, 30]
-
-    list.remove(2);
-    list.print();              // [10, 15, 30]
-
-    cout << "list[0] = " << list[0] << "\n";
-    cout << "find(15) tại index: " << list.find(15) << "\n\n";
-
-    // ------------------ Hash Table ------------------
-    cout << "=== HASH TABLE ===\n";
-    HashTable ht;
-    ht.insert("apple",  1);
-    ht.insert("banana", 2);
-    ht.insert("cherry", 5);
-    ht.insert("dog",    9);
-
-    int* v = ht.get("banana");
-    if (v) cout << "banana = " << *v << "\n";
-
-    ht.remove("banana");
-    cout << "Sau khi xóa banana: "
-         << (ht.get("banana") ? "found" : "not found") << "\n\n";
-
-    ht.print();
-
-    // ------------------ Priority Queue ------------------
-    cout << "\n=== PRIORITY QUEUE ===\n";
-    PriorityQueue pq;
-    pq.push(30);
-    pq.push(10);
-    pq.push(50);
-    pq.push(20);
-    pq.print();                          // heap nội bộ
-
-    cout << "top = " << pq.top() << "\n";   // 50
-    pq.pop();
-    cout << "top = " << pq.top() << "\n";   // 30
-    pq.pop();
-    cout << "top = " << pq.top() << "\n";   // 20
-
     return 0;
 }
