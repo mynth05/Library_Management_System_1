@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <ctime>
+#include <cstdio>
 using namespace std;
 
 // ================================================================
@@ -177,17 +178,25 @@ struct TrackBook {
 
     // ---- Thao tác ----
     bool isOverdue() const {
-        if (trang_thai == TrackStatus::RETURNED) return false;
-        return dateToDays(todayStr()) > dateToDays(han_tra);
+        string moc =
+            ngay_tra_thuc_te.empty()
+            ? todayStr()
+            : ngay_tra_thuc_te;
+    
+        return dateToDays(moc) > dateToDays(han_tra);
     }
 
     int soNgayTre() const {
-        if (!isOverdue()) return 0;
-        string moc = ngay_tra_thuc_te.empty() ? todayStr() : ngay_tra_thuc_te;
-        long diff  = dateToDays(moc) - dateToDays(han_tra);
-        return diff > 0 ? (int)diff : 0;
-    }
+    string moc =
+        ngay_tra_thuc_te.empty()
+        ? todayStr()
+        : ngay_tra_thuc_te;
 
+    long diff =
+        dateToDays(moc) - dateToDays(han_tra);
+
+    return diff > 0 ? (int)diff : 0;
+    }
     void updateStatus() {
         if (!ngay_tra_thuc_te.empty())
             trang_thai = TrackStatus::RETURNED;
