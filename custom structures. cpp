@@ -1,85 +1,167 @@
 #include <iostream>
-#include <string>
+#include <algorithm>   // std::copy
+#include <stdexcept>   // std::out_of_range
 using namespace std;
-
 // ----------------------------------------------------------
-//  LIST
+//  List
 // ----------------------------------------------------------
 class List {
 private:
     int* data;
-    int  size;
-    int  capacity;
+    int size;
+    int capacity;
 
     void resize() {
-        capacity *= 2;
-        int* newData = new int[capacity];
-        for (int i = 0; i < size; i++)
-            newData[i] = data[i];
+        int newCapacity = (capacity == 0) ? 4 : capacity * 2;
+
+        int* newData = new int[newCapacity];
+        std::copy(data, data + size, newData);
+
         delete[] data;
         data = newData;
+        capacity = newCapacity;
     }
 
 public:
-    List() : size(0), capacity(4) {
-        data = new int[capacity];
+    List() : data(new int[4]), size(0), capacity(4) {}
+
+    // Copy constructor
+    List(const List& other)
+        : data(new int[other.capacity]),
+          size(other.size),
+          capacity(other.capacity) {
+        std::copy(other.data, other.data + size, data);
     }
 
-    ~List() { delete[] data; }
+    // Copy assignment (exception-safe hơn)
+    List& operator=(const List& other) {
+        if (this == &other) return *this;
 
-    // Thêm vào cuối — O(1) amortized
+        int* newData = new int[other.capacity];
+        std::copy(other.data, other.data + other.size, newData);
+
+        delete[] data;
+
+        data = newData;
+        size = other.size;
+        capacity = other.capacity;
+
+        return *this;
+    }
+
+    // Move constructor
+    List(List&& other) noexcept
+        : data(other.data),
+          size(other.size),
+          capacity(other.capacity) {
+        other.data = nullptr;
+        other.size = 0;
+        other.capacity = 0;
+    }
+
+    // Move assignment
+    List& operator=(List&& other) noexcept {
+        if (this == &other) return *this;
+
+        delete[] data;
+
+        data = other.data;
+        size = other.size;
+        capacity = other.capacity;
+
+        other.data = nullptr;
+        other.size = 0;
+        other.capacity = 0;
+
+        return *this;
+    }
+
+    ~List() {
+        delete[] data;
+    }
+
+    // O(1) amortized
     void pushBack(int val) {
-        if (size == capacity) resize();
+        if (size == capacity)
+            resize();
+
         data[size++] = val;
     }
 
-    // Xóa phần tử cuối — O(1)
+    // O(1)
     void popBack() {
-        if (size > 0) size--;
+        if (size > 0)
+            --size;
     }
 
-    // Chèn vào vị trí idx — O(n)
+    // O(n)
     void insert(int idx, int val) {
-        if (idx < 0 || idx > size) return;
-        if (size == capacity) resize();
-        for (int i = size; i > idx; i--)
+        if (idx < 0 || idx > size)
+            throw out_of_range("Index out of range");
+
+        if (size == capacity)
+            resize();
+
+        for (int i = size; i > idx; --i)
             data[i] = data[i - 1];
+
         data[idx] = val;
-        size++;
+        ++size;
     }
 
-    // Xóa tại vị trí idx — O(n)
+    // O(n)
     void remove(int idx) {
-        if (idx < 0 || idx >= size) return;
-        for (int i = idx; i < size - 1; i++)
+        if (idx < 0 || idx >= size)
+            throw out_of_range("Index out of range");
+
+        for (int i = idx; i < size - 1; ++i)
             data[i] = data[i + 1];
-        size--;
+
+        --size;
     }
 
-    // Tìm kiếm — O(n)
-    int find(int val) {
-        for (int i = 0; i < size; i++)
-            if (data[i] == val) return i;
+    // O(n)
+    int find(int val) const {
+        for (int i = 0; i < size; ++i)
+            if (data[i] == val)
+                return i;
+
         return -1;
     }
 
-    // Truy cập theo index — O(1)
-    int& operator[](int idx) { return data[idx]; }
+    // O(1)
+    int& operator[](int idx) {
+        if (idx < 0 || idx >= size)
+            throw out_of_range("Index out of range");
 
-    int getSize()     const { return size; }
-    int getCapacity() const { return capacity; }
+        return data[idx];
+    }
+
+    const int& operator[](int idx) const {
+        if (idx < 0 || idx >= size)
+            throw out_of_range("Index out of range");
+
+        return data[idx];
+    }
+
+    int getSize() const {
+        return size;
+    }
+
+    int getCapacity() const {
+        return capacity;
+    }
 
     void print() const {
         cout << "[";
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size; ++i) {
             cout << data[i];
-            if (i < size - 1) cout << ", ";
+            if (i < size - 1)
+                cout << ", ";
         }
         cout << "]\n";
     }
 };
-
-
 // ----------------------------------------------------------
 //  HASH TABLE
 // ----------------------------------------------------------
