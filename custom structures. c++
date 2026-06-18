@@ -243,12 +243,8 @@ public:
     }
 };
 
-
-// ══════════════════════════════════════════════════════════
-//  MAIN
-// ══════════════════════════════════════════════════════════
 int main() {
-    // ── List ─────────────────────────────────
+    // ------------------ List ------------------
     cout << "=== LIST ===\n";
     List list;
     list.pushBack(10);
@@ -265,7 +261,7 @@ int main() {
     cout << "list[0] = " << list[0] << "\n";
     cout << "find(15) tại index: " << list.find(15) << "\n\n";
 
-    // ── Hash Table ───────────────────────────
+    // ------------------ Hash Table ------------------
     cout << "=== HASH TABLE ===\n";
     HashTable ht;
     ht.insert("apple",  1);
@@ -282,7 +278,7 @@ int main() {
 
     ht.print();
 
-    // ── Priority Queue ───────────────────────
+    // ------------------ Priority Queue ------------------
     cout << "\n=== PRIORITY QUEUE ===\n";
     PriorityQueue pq;
     pq.push(30);
