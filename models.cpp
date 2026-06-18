@@ -178,12 +178,8 @@ struct TrackBook {
 
     // ---- Thao tác ----
     bool isOverdue() const {
-        string moc =
-            ngay_tra_thuc_te.empty()
-            ? todayStr()
-            : ngay_tra_thuc_te;
-    
-        return dateToDays(moc) > dateToDays(han_tra);
+    if (!ngay_tra_thuc_te.empty()) return false;  // đã trả rồi → không overdue
+    return dateToDays(todayStr()) > dateToDays(han_tra);
     }
 
     int soNgayTre() const {
