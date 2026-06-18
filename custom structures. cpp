@@ -3,7 +3,7 @@
 #include <algorithm>   // std::copy
 #include <stdexcept>   // std::out_of_range
 using namespace std;
-
+ 
 // ══════════════════════════════════════════════════════════
 //  LIST (mảng động)
 // ══════════════════════════════════════════════════════════
@@ -12,7 +12,7 @@ private:
     int* data;
     int  size;
     int  capacity;
-
+ 
     void resize() {
         int newCapacity = (capacity == 0) ? 4 : capacity * 2;
         int* newData = new int[newCapacity];
@@ -21,10 +21,10 @@ private:
         data = newData;
         capacity = newCapacity;
     }
-
+ 
 public:
     List() : data(new int[4]), size(0), capacity(4) {}
-
+ 
     // Copy constructor
     List(const List& other)
         : data(new int[other.capacity]),
@@ -32,7 +32,7 @@ public:
           capacity(other.capacity) {
         std::copy(other.data, other.data + size, data);
     }
-
+ 
     // Copy assignment (exception-safe)
     List& operator=(const List& other) {
         if (this == &other) return *this;
@@ -44,7 +44,7 @@ public:
         capacity = other.capacity;
         return *this;
     }
-
+ 
     // Move constructor
     List(List&& other) noexcept
         : data(other.data), size(other.size), capacity(other.capacity) {
@@ -52,7 +52,7 @@ public:
         other.size     = 0;
         other.capacity = 0;
     }
-
+ 
     // Move assignment
     List& operator=(List&& other) noexcept {
         if (this == &other) return *this;
@@ -65,20 +65,20 @@ public:
         other.capacity = 0;
         return *this;
     }
-
+ 
     ~List() { delete[] data; }
-
+ 
     // Thêm vào cuối — O(1) amortized
     void pushBack(int val) {
         if (size == capacity) resize();
         data[size++] = val;
     }
-
+ 
     // Xóa phần tử cuối — O(1)
     void popBack() {
         if (size > 0) --size;
     }
-
+ 
     // Chèn vào vị trí idx — O(n)
     void insert(int idx, int val) {
         if (idx < 0 || idx > size)
@@ -89,7 +89,7 @@ public:
         data[idx] = val;
         ++size;
     }
-
+ 
     // Xóa tại vị trí idx — O(n)
     void remove(int idx) {
         if (idx < 0 || idx >= size)
@@ -98,30 +98,30 @@ public:
             data[i] = data[i + 1];
         --size;
     }
-
+ 
     // Tìm kiếm — O(n)
     int find(int val) const {
         for (int i = 0; i < size; ++i)
             if (data[i] == val) return i;
         return -1;
     }
-
+ 
     // Truy cập theo index — O(1)
     int& operator[](int idx) {
         if (idx < 0 || idx >= size)
             throw out_of_range("Index out of range");
         return data[idx];
     }
-
+ 
     const int& operator[](int idx) const {
         if (idx < 0 || idx >= size)
             throw out_of_range("Index out of range");
         return data[idx];
     }
-
+ 
     int getSize()     const { return size; }
     int getCapacity() const { return capacity; }
-
+ 
     void print() const {
         cout << "[";
         for (int i = 0; i < size; ++i) {
@@ -131,8 +131,8 @@ public:
         cout << "]\n";
     }
 };
-
-
+ 
+ 
 // ══════════════════════════════════════════════════════════
 //  HASH TABLE (open addressing + linear probing + rehash)
 // ══════════════════════════════════════════════════════════
@@ -144,19 +144,19 @@ private:
         bool   occupied = false;
         bool   deleted  = false;
     };
-
+ 
     Slot* table;
     int   capacity;
     int   count;      // số slot đã từng dùng
     int   liveCount;  // số phần tử còn tồn tại
-
+ 
     int hash(const string& key, int cap) const {
         unsigned long h = 5381;
         for (char c : key)
             h = ((h << 5) + h) + c;   // djb2
         return static_cast<int>(h % cap);
     }
-
+ 
     // Chỉ dùng trong rehash, không kiểm tra load factor
     void insertDirect(const string& key, int value) {
         int idx = hash(key, capacity);
@@ -170,7 +170,7 @@ private:
             }
         }
     }
-
+ 
     void rehash() {
         Slot* oldTable    = table;
         int   oldCapacity = capacity;
@@ -183,12 +183,12 @@ private:
                 insertDirect(oldTable[i].key, oldTable[i].value);
         delete[] oldTable;
     }
-
+ 
 public:
     HashTable() : capacity(16), count(0), liveCount(0) {
         table = new Slot[capacity];
     }
-
+ 
     // Copy constructor
     HashTable(const HashTable& other)
         : capacity(other.capacity),
@@ -198,7 +198,7 @@ public:
         for (int i = 0; i < capacity; ++i)
             table[i] = other.table[i];
     }
-
+ 
     // Copy assignment
     HashTable& operator=(const HashTable& other) {
         if (this == &other) return *this;
@@ -212,7 +212,7 @@ public:
         liveCount = other.liveCount;
         return *this;
     }
-
+ 
     // Move constructor
     HashTable(HashTable&& other) noexcept
         : table(other.table),
@@ -224,7 +224,7 @@ public:
         other.count     = 0;
         other.liveCount = 0;
     }
-
+ 
     // Move assignment
     HashTable& operator=(HashTable&& other) noexcept {
         if (this == &other) return *this;
@@ -239,20 +239,20 @@ public:
         other.liveCount = 0;
         return *this;
     }
-
+ 
     ~HashTable() { delete[] table; }
-
+ 
     // Thêm / cập nhật — O(1) trung bình
     void insert(const string& key, int value) {
         if ((liveCount + 1.0) / capacity > 0.7)   // dùng liveCount, không phải count
             rehash();
-
+ 
         int idx           = hash(key, capacity);
         int firstTombstone = -1;
-
+ 
         for (int i = 0; i < capacity; ++i) {
             int probe = (idx + i) % capacity;
-
+ 
             if (!table[probe].occupied) {
                 int pos = (firstTombstone != -1) ? firstTombstone : probe;
                 table[pos] = {key, value, true, false};
@@ -260,24 +260,24 @@ public:
                 ++liveCount;
                 return;
             }
-
+ 
             if (table[probe].deleted) {
                 if (firstTombstone == -1) firstTombstone = probe;
                 continue;
             }
-
+ 
             if (table[probe].key == key) {
                 table[probe].value = value;
                 return;
             }
         }
-
+ 
         if (firstTombstone != -1) {
             table[firstTombstone] = {key, value, true, false};
             ++liveCount;
         }
     }
-
+ 
     // Tìm kiếm — O(1) trung bình
     int* get(const string& key) {
         int idx = hash(key, capacity);
@@ -289,7 +289,7 @@ public:
         }
         return nullptr;
     }
-
+ 
     const int* get(const string& key) const {
         int idx = hash(key, capacity);
         for (int i = 0; i < capacity; ++i) {
@@ -300,7 +300,7 @@ public:
         }
         return nullptr;
     }
-
+ 
     // Xóa — O(1) trung bình
     bool remove(const string& key) {
         int idx = hash(key, capacity);
@@ -315,10 +315,10 @@ public:
         }
         return false;
     }
-
+ 
     int getSize()     const { return liveCount; }
     int getCapacity() const { return capacity; }
-
+ 
     void print() const {
         for (int i = 0; i < capacity; ++i) {
             cout << "[" << i << "] ";
@@ -332,8 +332,8 @@ public:
         }
     }
 };
-
-
+ 
+ 
 // ══════════════════════════════════════════════════════════
 //  PRIORITY QUEUE (max-heap)
 // ══════════════════════════════════════════════════════════
@@ -342,7 +342,7 @@ private:
     int* data;
     int  size;
     int  capacity;
-
+ 
     void resize() {
         capacity *= 2;
         int* newData = new int[capacity];
@@ -351,12 +351,12 @@ private:
         delete[] data;
         data = newData;
     }
-
+ 
     // Vị trí cha / con trong heap
     int parent(int i) { return (i - 1) / 2; }
     int left  (int i) { return 2 * i + 1; }
     int right (int i) { return 2 * i + 2; }
-
+ 
     // Đẩy phần tử lên để đúng vị trí — O(log n)
     void heapifyUp(int i) {
         while (i > 0 && data[parent(i)] < data[i]) {
@@ -364,7 +364,7 @@ private:
             i = parent(i);
         }
     }
-
+ 
     // Đẩy phần tử xuống để đúng vị trí — O(log n)
     void heapifyDown(int i) {
         int largest = i;
@@ -376,37 +376,37 @@ private:
             heapifyDown(largest);
         }
     }
-
+ 
 public:
     PriorityQueue() : size(0), capacity(4) {
         data = new int[capacity];
     }
-
+ 
     ~PriorityQueue() { delete[] data; }
-
+ 
     // Thêm phần tử — O(log n)
     void push(int val) {
         if (size == capacity) resize();
         data[size++] = val;
         heapifyUp(size - 1);
     }
-
+ 
     // Lấy phần tử ưu tiên cao nhất — O(1)
     int top() {
         if (size == 0) throw runtime_error("PriorityQueue rỗng!");
         return data[0];
     }
-
+ 
     // Xóa phần tử ưu tiên cao nhất — O(log n)
     void pop() {
         if (size == 0) return;
         data[0] = data[--size];
         heapifyDown(0);
     }
-
+ 
     bool empty() const { return size == 0; }
     int  getSize() const { return size; }
-
+ 
     void print() const {
         cout << "[";
         for (int i = 0; i < size; i++) {
