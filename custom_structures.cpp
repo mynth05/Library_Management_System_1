@@ -314,13 +314,15 @@ public:
 };
 
 // ===================== PRIORITY QUEUE (max-heap) =====================
+
+template<typename T>
 class PriorityQueue {
 private:
-    List<int> data;
+    List<T> data;
 
     int parent(int i) const { return (i - 1) / 2; }
-    int left(int i)   const { return 2 * i + 1; }
-    int right(int i)  const { return 2 * i + 2; }
+    int left(int i) const { return 2 * i + 1; }
+    int right(int i) const { return 2 * i + 2; }
 
     void heapifyUp(int i) {
         while (i > 0 && data[parent(i)] < data[i]) {
@@ -337,10 +339,10 @@ private:
             int l = left(i);
             int r = right(i);
 
-            if (l < n && data[l] > data[largest])
+            if (l < n && data[largest] < data[l])
                 largest = l;
 
-            if (r < n && data[r] > data[largest])
+            if (r < n && data[largest] < data[r])
                 largest = r;
 
             if (largest == i)
@@ -352,12 +354,12 @@ private:
     }
 
 public:
-    void push(int val) {
+    void push(const T& val) {
         data.pushBack(val);
         heapifyUp(data.getSize() - 1);
     }
 
-    int top() const {
+    T top() const {
         if (empty())
             throw runtime_error("PriorityQueue rong!");
 
@@ -365,7 +367,8 @@ public:
     }
 
     void pop() {
-        if (empty()) return;
+        if (empty())
+            return;
 
         data[0] = data[data.getSize() - 1];
         data.popBack();
@@ -378,11 +381,11 @@ public:
         return data.getSize() == 0;
     }
 
-    int getSize() const {
-        return data.getSize();
+    bool isEmpty() const {
+        return data.getSize() == 0;
     }
 
-    void print() const {
-        data.print();
+    int getSize() const {
+        return data.getSize();
     }
 };
