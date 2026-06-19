@@ -134,7 +134,6 @@ class HashTable:
         for bucket in old_buckets:
             node = bucket
             while node:
-                node = node.next
                 self.put(node.key, node.value)
                 node = node.next
 
