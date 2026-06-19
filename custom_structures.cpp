@@ -146,17 +146,17 @@ public:
 };
 
 // ===================== HASH TABLE =====================
+
+template<typename T>
 struct Entry {
     string key;
-    int value;
+    T value;
 };
-ostream& operator<<(ostream& os, const Entry& e) {
-    os << "(" << e.key << ", " << e.value << ")";
-    return os;
-}
+
+template<typename T>
 class HashTable {
 private:
-    List<Entry>* buckets;
+    List<Entry<T>>* buckets;
     int capacity;
     int liveCount;
 
@@ -175,11 +175,11 @@ private:
 
     void rehash() {
         int newCapacity = capacity * 2;
-        List<Entry>* newBuckets = new List<Entry>[newCapacity];
+        List<Entry<T>>* newBuckets = new List<Entry<T>>[newCapacity];
 
         for (int i = 0; i < capacity; i++) {
             for (int j = 0; j < buckets[i].getSize(); j++) {
-                const Entry& e = buckets[i][j];
+                const Entry<T>& e = buckets[i][j];
                 int idx = hash(e.key, newCapacity);
                 newBuckets[idx].pushBack(e);
             }
@@ -193,61 +193,61 @@ private:
 public:
     HashTable(int cap = 16)
         : capacity(cap), liveCount(0) {
-        buckets = new List<Entry>[capacity];
+
+        buckets = new List<Entry<T>>[capacity];
     }
 
-    // Không cho phép copy vì quản lý raw pointer
     HashTable(const HashTable& other)
-    : capacity(other.capacity),
-      liveCount(other.liveCount) {
+        : capacity(other.capacity),
+          liveCount(other.liveCount) {
 
-    buckets = new List<Entry>[capacity];
+        buckets = new List<Entry<T>>[capacity];
 
-    for (int i = 0; i < capacity; i++)
-        buckets[i] = other.buckets[i];
-}
+        for (int i = 0; i < capacity; i++)
+            buckets[i] = other.buckets[i];
+    }
 
     HashTable& operator=(const HashTable& other) {
         if (this == &other)
             return *this;
-    
+
         delete[] buckets;
-    
+
         capacity = other.capacity;
         liveCount = other.liveCount;
-    
-        buckets = new List<Entry>[capacity];
-    
+
+        buckets = new List<Entry<T>>[capacity];
+
         for (int i = 0; i < capacity; i++)
             buckets[i] = other.buckets[i];
-    
+
         return *this;
     }
-    
+
     HashTable(HashTable&& other) noexcept
         : buckets(other.buckets),
           capacity(other.capacity),
           liveCount(other.liveCount) {
-    
+
         other.buckets = nullptr;
         other.capacity = 0;
         other.liveCount = 0;
     }
-    
+
     HashTable& operator=(HashTable&& other) noexcept {
         if (this == &other)
             return *this;
-    
+
         delete[] buckets;
-    
+
         buckets = other.buckets;
         capacity = other.capacity;
         liveCount = other.liveCount;
-    
+
         other.buckets = nullptr;
         other.capacity = 0;
         other.liveCount = 0;
-    
+
         return *this;
     }
 
@@ -255,8 +255,8 @@ public:
         delete[] buckets;
     }
 
-    void insert(const string& key, int value) {
-        if ((double)(liveCount+1) / capacity > 0.75)
+    void insert(const string& key, const T& value) {
+        if ((double)(liveCount + 1) / capacity > 0.75)
             rehash();
 
         int idx = hash(key);
@@ -272,7 +272,7 @@ public:
         ++liveCount;
     }
 
-    int* get(const string& key) {
+    T* get(const string& key) {
         int idx = hash(key);
 
         for (int i = 0; i < buckets[idx].getSize(); i++) {
@@ -282,14 +282,18 @@ public:
 
         return nullptr;
     }
-    const int* get(const string& key) const {
+
+    const T* get(const string& key) const {
         int idx = hash(key);
+
         for (int i = 0; i < buckets[idx].getSize(); i++) {
             if (buckets[idx][i].key == key)
                 return &buckets[idx][i].value;
         }
+
         return nullptr;
     }
+
     bool remove(const string& key) {
         int idx = hash(key);
 
@@ -306,22 +310,6 @@ public:
 
     int getSize() const {
         return liveCount;
-    }
-
-    void print() const {
-        for (int i = 0; i < capacity; i++) {
-            cout << "[" << i << "] ";
-
-            for (int j = 0; j < buckets[i].getSize(); j++) {
-                cout << "("
-                     << buckets[i][j].key
-                     << ", "
-                     << buckets[i][j].value
-                     << ") ";
-            }
-
-            cout << '\n';
-        }
     }
 };
 
