@@ -1,0 +1,2 @@
+struct build_manage_book_tab:
+    Table booktable;
