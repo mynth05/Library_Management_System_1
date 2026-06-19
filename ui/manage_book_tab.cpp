@@ -1,4 +1,4 @@
-struct ManagaBookTab {
+struct ManageBookTab {
     Table booktable;
 
     Button addButton;
@@ -27,4 +27,4 @@ void build_manage_book_tab(App& app){
         "Trang thai"
         
     });
-}
+};
