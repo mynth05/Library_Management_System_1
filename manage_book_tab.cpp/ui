@@ -1,1 +1,2 @@
-struct build_manage_book_tab(app):
+struct build_manage_book_tab:
+    Table booktable;
