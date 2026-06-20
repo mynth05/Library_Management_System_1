@@ -1,0 +1,22 @@
+[
+  {
+    "ma_phieu": "PM001",
+    "ma_sach": "S001",
+    "ma_ban_doc": "BD001",
+    "ngay_muon": "2026-06-01",
+    "han_tra": "2026-06-25",
+    "ngay_tra_thuc_te": "2026-06-28",
+    "trang_thai": "returned",
+    "so_lan_gia_han": 1
+  },
+  {
+    "ma_phieu": "PM002",
+    "ma_sach": "S002",
+    "ma_ban_doc": "BD001",
+    "ngay_muon": "2026-06-01",
+    "han_tra": "2026-06-15",
+    "ngay_tra_thuc_te": "2026-06-20",
+    "trang_thai": "returned",
+    "so_lan_gia_han": 0
+  }
+]

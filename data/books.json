@@ -1,0 +1,20 @@
+[
+  {
+    "ma_sach": "S001",
+    "ten_sach": "Lap Trinh Python",
+    "tac_gia": "Guido",
+    "the_loai": "CNTT",
+    "nha_xuat_ban": "NXB KH&KT",
+    "so_luong": 5,
+    "tinh_trang": "new"
+  },
+  {
+    "ma_sach": "S002",
+    "ten_sach": "Cau Truc Du Lieu",
+    "tac_gia": "Nguyen A",
+    "the_loai": "CNTT",
+    "nha_xuat_ban": "NXB GD",
+    "so_luong": 1,
+    "tinh_trang": "new"
+  }
+]

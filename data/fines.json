@@ -1,0 +1,22 @@
+[
+  {
+    "ma_phat": "FINE_PM001",
+    "ma_phieu": "PM001",
+    "ly_do": "overdue",
+    "so_ngay_tre": 3,
+    "tien_phat_ngay": 15000.0,
+    "tien_phat_sach": 0.0,
+    "tong_tien_phat": 15000.0,
+    "da_thanh_toan": false
+  },
+  {
+    "ma_phat": "LOST_PM002",
+    "ma_phieu": "PM002",
+    "ly_do": "lost",
+    "so_ngay_tre": 5,
+    "tien_phat_ngay": 25000.0,
+    "tien_phat_sach": 300000.0,
+    "tong_tien_phat": 325000.0,
+    "da_thanh_toan": false
+  }
+]
