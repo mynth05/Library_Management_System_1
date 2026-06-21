@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Widgets — các hàm nhập liệu và in ấn dùng chung cho toàn bộ giao diện CLI.
 """
@@ -60,13 +59,13 @@ def nhap_so_nguyen(prompt: str, min_val: int = 0, max_val: int = None, default: 
         try:
             gia_tri = int(raw)
         except ValueError:
-            print("  ✘ Vui lòng nhập số nguyên hợp lệ.")
+            print("  Vui lòng nhập số nguyên hợp lệ.")
             continue
         if gia_tri < min_val:
-            print(f"  ✘ Giá trị phải ≥ {min_val}.")
+            print(f"  Giá trị phải ≥ {min_val}.")
             continue
         if max_val is not None and gia_tri > max_val:
-            print(f"  ✘ Giá trị phải ≤ {max_val}.")
+            print(f"  Giá trị phải ≤ {max_val}.")
             continue
         return gia_tri
 
@@ -77,7 +76,7 @@ def nhap_ngay(prompt: str) -> str:
         ngay = input(prompt).strip()
         if Validator.is_valid_date(ngay):
             return ngay
-        print("  ✘ Ngày không hợp lệ. Định dạng: YYYY-MM-DD (VD: 2026-06-20).")
+        print("  Ngày không hợp lệ. Định dạng: YYYY-MM-DD (VD: 2026-06-20).")
 
 
 def chon_menu(danh_sach: list) -> int:
@@ -97,7 +96,7 @@ def xac_nhan(prompt: str) -> bool:
             return True
         if tra_loi in ("n", "no", "không", "khong"):
             return False
-        print("  ✘ Vui lòng nhập 'y' (có) hoặc 'n' (không).")
+        print("  Vui lòng nhập 'y' (có) hoặc 'n' (không).")
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -111,15 +110,15 @@ def in_bang_sach(danh_sach, tieu_de: str = "Danh sách sách") -> None:
         print("  (Không có kết quả)")
         return
 
-    header = f"  {'Mã sách':<10} {'Tên sách':<30} {'Tác giả':<20} {'Thể loại':<15} {'NXB':<15} {'SL':>4} {'T.Trạng':<8}"
+    header = f"  {'Mã sách':<10} {'Tên sách':<30} {'Tác giả':<20} {'Thể loại':<10} {'NXB':<15} {'SL':>4} {'T.Trạng':<8}"
     print(header)
     print("  " + "-" * (len(header) - 2))
     for sach in danh_sach:
         ten   = sach.ten_sach[:28]  + ".." if len(sach.ten_sach)  > 28 else sach.ten_sach
         tac   = sach.tac_gia[:18]   + ".." if len(sach.tac_gia)   > 18 else sach.tac_gia
-        loai  = sach.the_loai[:13]  + ".." if len(sach.the_loai)  > 13 else sach.the_loai
+        loai  = sach.the_loai[:8]  + ".." if len(sach.the_loai)  > 8 else sach.the_loai
         nxb   = sach.nha_xuat_ban[:13] + ".." if len(sach.nha_xuat_ban) > 13 else sach.nha_xuat_ban
-        print(f"  {sach.ma_sach:<10} {ten:<30} {tac:<20} {loai:<15} {nxb:<15} {sach.so_luong:>4} {sach.tinh_trang.value:<8}")
+        print(f"  {sach.ma_sach:<10} {ten:<30} {tac:<20} {loai:<10} {nxb:<15} {sach.so_luong:>4} {sach.tinh_trang.value:<8}")
     print(f"\n  Tổng: {len(danh_sach)} sách\n")
 
 
