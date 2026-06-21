@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Giao diện quản lí phạt — xem, thanh toán, tìm kiếm phiếu phạt."""
 
 import sys, os
@@ -91,28 +90,24 @@ def _loc_phieu_phat(app) -> None:
     in_tieu_de("LỌC PHIẾU PHẠT")
     print("Chọn bộ lọc phiếu phạt:")
     lua_chon = chon_menu([
-        "Xem phiếu phạt theo bạn đọc",
-        "Xem phiếu phạt chưa thanh toán",
-        "Xem tất cả phiếu phạt"
+        "Phiếu phạt đã thanh toán",
+        "Phiếu phạt chưa thanh toán",
+        "Tất cả phiếu phạt",
     ])
 
     if lua_chon == 1:
-        ma_ban_doc = nhap_chuoi("Nhập mã bạn đọc: ")
-        ds = app.lay_phat_theo_doc_gia(ma_ban_doc)
-        in_bang_phat(ds, f"Phiếu phạt của bạn đọc {ma_ban_doc}")
-        tong = sum(p.tong_tien_phat for p in ds if not p.da_thanh_toan)
-        if tong > 0:
-            print(f"\n  💰 Tổng tiền còn nợ: {tong:,.0f} đ")
+        ds = app.lay_tat_ca_phat()
+        ds_loc = [p for p in ds if p.da_thanh_toan]
+        in_bang_phat(ds_loc, "Danh sách phiếu phạt đã thanh toán")
     elif lua_chon == 2:
         ds = app.lay_phat_chua_thanh_toan()
-        in_bang_phat(ds, "Danh sách chưa thanh toán")
+        in_bang_phat(ds, "Danh sách phiếu phạt chưa thanh toán")
         tong = app.tong_tien_phat_chua_thu()
-        print(f"\n  💰 Tổng tiền chưa thu: {tong:,.0f} đ")
+        print(f"\n Tổng tiền chưa thu: {tong:,.0f} đ")
     elif lua_chon == 3:
         ds = app.lay_tat_ca_phat()
         in_bang_phat(ds, "Tất cả phiếu phạt")
         tong = app.tong_tien_phat_chua_thu()
-        print(f"\n  💰 Tổng tiền chưa thu: {tong:,.0f} đ")
+        print(f"\n Tổng tiền chưa thu: {tong:,.0f} đ")
 
     input("\nNhấn Enter để tiếp tục...")
-
