@@ -8,6 +8,7 @@ import sys
 # Thêm thư mục hiện tại vào sys.path để đảm bảo các import hoạt động trơn tru
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from app_logic import Validator
+from custom_structures import List
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -79,7 +80,7 @@ def nhap_ngay(prompt: str) -> str:
         print("  Ngày không hợp lệ. Định dạng: YYYY-MM-DD (VD: 2026-06-20).")
 
 
-def chon_menu(danh_sach: list) -> int:
+def chon_menu(danh_sach: List) -> int:
     """Hiển thị menu và trả về chỉ số (1-based) của lựa chọn."""
     for i, muc in enumerate(danh_sach, 1):
         print(f"  {i:>2}. {muc}")
