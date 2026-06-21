@@ -521,7 +521,7 @@ class LogicApp:
         so_ngay_tre = max(0, track.soNgayTre(ngay_bao))
         fine = Fine(
             ma_phat=ma_phat, ma_phieu=ma_phieu,
-            ly_do=FineReason.DAMAGE,
+            ly_do=FineReason.DAMAGED,
             so_ngay_tre=so_ngay_tre,
             tien_phat_ngay=so_ngay_tre * FINE_PER_DAY,
             tien_phat_sach=FINE_DAMAGE,
