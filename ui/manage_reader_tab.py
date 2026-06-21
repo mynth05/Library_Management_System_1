@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Giao diện quản lí bạn đọc — thêm, sửa, xóa, tìm kiếm, lọc."""
 
 import sys, os
@@ -60,9 +59,7 @@ def _them_ban_doc(app) -> None:
     in_tieu_de("THÊM BẠN ĐỌC MỚI")
     from app_logic import Validator
     while True:
-        ma_ban_doc = nhap_chuoi("Mã bạn đọc (gõ '7' để ): ")
-        if ma_ban_doc.lower() == '7':
-            return
+        ma_ban_doc = nhap_chuoi("Mã bạn đọc: ")
         if not Validator.is_valid_id(ma_ban_doc):
             print("Mã bạn đọc không hợp lệ (chỉ chứa chữ, số, gạch ngang, gạch dưới). Vui lòng nhập lại!")
             continue
@@ -80,7 +77,7 @@ def _them_ban_doc(app) -> None:
     doc_gia = Reader(ma_ban_doc, ho_ten, ngay_sinh, gioi_tinh, dia_chi, so_dien_thoai)
     if app.them_doc_gia(doc_gia):
         print(f"\nĐã thêm bạn đọc '{ho_ten}' thành công.")
-        app.luu_du_lieu("data")
+        app.luu_du_lieu("data/readers.json")
     else:
         print("\nThêm bạn đọc thất bại. Lỗi dữ liệu không hợp lệ.")
     input("\nNhấn Enter để tiếp tục...")
@@ -111,7 +108,7 @@ def _cap_nhat_ban_doc(app) -> None:
                 gia_tri = nhap_chuoi(f"Giá trị mới cho '{ten_truong}': ")
             app.cap_nhat_doc_gia(ma_ban_doc, **{ten_truong: gia_tri})
             print(f"Đã cập nhật '{ten_truong}'.")
-            app.luu_du_lieu("data")
+            app.luu_du_lieu("data/readers.json")
         except (KeyError, ValueError) as e:
             print(f"Lỗi: {e}")
     input("\nNhấn Enter để tiếp tục...")
@@ -127,7 +124,7 @@ def _xoa_ban_doc(app) -> None:
         print("Đã hủy.")
     elif app.xoa_doc_gia(ma_ban_doc):
         print("Đã xóa bạn đọc thành công.")
-        app.luu_du_lieu("data")
+        app.luu_du_lieu("data/readers.json")
     else:
         print("Không thể xóa. Bạn đọc đang có sách mượn chưa trả.")
     input("\nNhấn Enter để tiếp tục...")
