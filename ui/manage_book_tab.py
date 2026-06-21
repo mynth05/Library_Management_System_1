@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Giao diện quản lí sách — thêm, sửa, xóa, tìm kiếm, lọc, sắp xếp."""
 
 import sys, os
@@ -54,9 +53,7 @@ def _them_sach(app) -> None:
     in_tieu_de("THÊM SÁCH MỚI")
     from app_logic import Validator
     while True:
-        ma_sach = nhap_chuoi("Mã sách (chữ/số/gạch ngang, gõ 'q' để hủy): ")
-        if ma_sach.lower() == 'q':
-            return
+        ma_sach = nhap_chuoi("Mã sách (chữ/số/gạch ngang): ")
         if not Validator.is_valid_id(ma_sach):
             print("Mã sách không hợp lệ (chỉ chứa chữ, số, gạch ngang, gạch dưới). Vui lòng nhập lại!")
             continue
@@ -78,7 +75,7 @@ def _them_sach(app) -> None:
     sach = Book(ma_sach, ten_sach, tac_gia, the_loai, nha_xuat_ban, so_luong, tinh_trang)
     if app.them_sach(sach):
         print(f"\nĐã thêm sách '{ten_sach}' thành công.")
-        app.luu_du_lieu("data")
+        app.luu_du_lieu("data/books.json")
     else:
         print("\nThêm sách thất bại. Lỗi dữ liệu không hợp lệ.")
     input("\nNhấn Enter để tiếp tục...")
@@ -89,7 +86,7 @@ def _cap_nhat_sach(app) -> None:
     ma_sach = nhap_chuoi("Nhập mã sách cần cập nhật: ")
     sach = app.tim_sach(ma_sach)
     if sach is None:
-        print("✘ Không tìm thấy sách.")
+        print("Không tìm thấy sách.")
         input("\nNhấn Enter để tiếp tục...")
         return
 
@@ -123,7 +120,7 @@ def _xoa_sach(app) -> None:
     ma_sach = nhap_chuoi("Nhập mã sách cần xóa: ")
     sach = app.tim_sach(ma_sach)
     if sach is None:
-        print("✘ Không tìm thấy sách.")
+        print("Không tìm thấy sách.")
     elif not xac_nhan(f"Bạn có chắc muốn xóa sách '{sach.ten_sach}'? (y/n): "):
         print("Đã hủy.")
     elif app.xoa_sach(ma_sach):
