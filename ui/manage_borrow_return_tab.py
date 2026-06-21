@@ -5,6 +5,7 @@ import sys, os
 import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from models import TrackStatus
+from custom_structures import List
 from ui.widgets import (
     nhap_chuoi, nhap_ngay, chon_menu,
     in_tieu_de, in_bang_phieu_muon,
@@ -50,7 +51,8 @@ _BAO_MSG = {
 
 def man_hinh_quan_li_muon_tra(app) -> None:
     """Vòng lặp giao diện quản lí mượn trả."""
-    MENU = [
+    MENU = List()
+    MENU.extend([
         "Tạo phiếu mượn",
         "Trả sách",
         "Gia hạn mượn sách",
@@ -59,7 +61,7 @@ def man_hinh_quan_li_muon_tra(app) -> None:
         "Tìm kiếm phiếu mượn",
         "Lọc danh sách phiếu mượn",
         "Quay lại",
-    ]
+    ])
 
     while True:
         in_tieu_de("QUẢN LÍ MƯỢN TRẢ")
@@ -241,8 +243,9 @@ def _bao_hu(app) -> None:
 
 def _tim_kiem_phieu(app) -> None:
     in_tieu_de("TÌM KIẾM PHIẾU MƯỢN")
-    print("Chọn phương thức tìm kiếm:")
-    lua_chon = chon_menu(["Tìm theo mã phiếu", "Tìm theo mã bạn đọc"])
+    menu_tim = List()
+    menu_tim.extend(["Tìm theo mã phiếu", "Tìm theo mã bạn đọc"])
+    lua_chon = chon_menu(menu_tim)
 
     if lua_chon == 1:
         ma_phieu = nhap_chuoi("Nhập mã phiếu mượn: ")
@@ -261,8 +264,9 @@ def _tim_kiem_phieu(app) -> None:
 
 def _loc_phieu_muon(app) -> None:
     in_tieu_de("LỌC PHIẾU MƯỢN")
-    print("Lọc phiếu theo:")
-    lua_chon = chon_menu(["Phiếu đang mượn", "Phiếu quá hạn", "Tất cả phiếu mượn"])
+    menu_loc = List()
+    menu_loc.extend(["Phiếu đang mượn", "Phiếu quá hạn", "Tất cả phiếu mượn"])
+    lua_chon = chon_menu(menu_loc)
 
     if lua_chon == 1:
         ds = app.lay_phieu_theo_trang_thai(TrackStatus.BORROWING)
