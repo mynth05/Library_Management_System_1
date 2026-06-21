@@ -116,7 +116,7 @@ def _nhap_ma_phieu_hop_le(app, prompt: str) -> str:
             return None
         phieu = app.tim_phieu_muon(ma_phieu)
         if phieu is None:
-            print("✘ Không tìm thấy mã phiếu mượn này trong hệ thống. Vui lòng nhập lại (hoặc gõ 'q' để hủy)!")
+            print("Không tìm thấy mã phiếu mượn này trong hệ thống. Vui lòng nhập lại (hoặc gõ 'q' để hủy)!")
         else:
             return ma_phieu
 
@@ -127,13 +127,36 @@ def _nhap_ma_phieu_hop_le(app, prompt: str) -> str:
 
 def _tao_phieu_muon(app) -> None:
     in_tieu_de("TẠO PHIẾU MƯỢN")
-    ma_phieu = _sinh_ma_phieu(app)
-    print(f"Mã phiếu mượn (tự động): {ma_phieu}")
-    
-    ma_sach    = nhap_chuoi("Mã sách: ")
-    ma_ban_doc = nhap_chuoi("Mã bạn đọc: ")
-    ngay_muon  = nhap_ngay("Ngày mượn (YYYY-MM-DD): ")
-    han_tra    = _tinh_han_tra(ngay_muon)
+
+    while True:
+        ma_phieu = nhap_chuoi("Mã phiếu mượn: ")
+        if app.tim_phieu_muon(ma_phieu) is None:
+            break
+        print("Mã phiếu đã tồn tại. Vui lòng nhập mã khác.")
+
+    while True:
+        ma_sach = nhap_chuoi("Mã sách: ")
+        if app.tim_sach(ma_sach) is not None:
+            break
+        print("Mã sách không tồn tại. Vui lòng nhập lại.")
+
+    while True:
+        ma_ban_doc = nhap_chuoi("Mã bạn đọc: ")
+        if app.tim_doc_gia(ma_ban_doc) is None:
+            print("Mã bạn đọc không tồn tại. Vui lòng nhập lại.")
+            continue
+        # Kiểm tra bạn đọc có đang mượn cuốn này không
+        dang_muon = any(
+            t.ma_sach == ma_sach and t.trang_thai != TrackStatus.RETURNED
+            for t in app.lay_phieu_muon_theo_doc_gia(ma_ban_doc)
+        )
+        if dang_muon:
+            print("Bạn đọc đang mượn cuốn sách này. Vui lòng nhập mã bạn đọc khác.")
+            continue
+        break
+
+    ngay_muon = nhap_ngay("Ngày mượn (YYYY-MM-DD): ")
+    han_tra   = _tinh_han_tra(ngay_muon)
     print(f"Hạn trả (tự động cộng 90 ngày): {han_tra}")
 
     ma = app.muon_sach(ma_phieu, ma_sach, ma_ban_doc, ngay_muon, han_tra)
@@ -148,19 +171,22 @@ def _tra_sach(app) -> None:
     ma_phieu = _nhap_ma_phieu_hop_le(app, "Mã phiếu mượn: ")
     if not ma_phieu:
         return
-        
-    ngay_tra = nhap_ngay("Ngày trả (YYYY-MM-DD): ")
+
+    phieu = app.tim_phieu_muon(ma_phieu)
+    while True:
+        ngay_tra = nhap_ngay("Ngày trả (YYYY-MM-DD): ")
+        if ngay_tra >= phieu.ngay_muon:
+            break
+        print(f"Ngày trả phải sau ngày mượn ({phieu.ngay_muon}). Vui lòng nhập lại.")
 
     ma = app.tra_sach(ma_phieu, ngay_tra)
     print(f"\n{_TRA_MSG.get(ma, 'Lỗi không xác định.')}")
     if ma == 0:
         app.luu_du_lieu("data")
-    if ma == 0:
-        # Kiểm tra xem có phiếu phạt được tạo không
         ma_phat = f"FINE_{ma_phieu}"
         phieu_phat = app.tim_phieu_phat(ma_phat)
         if phieu_phat:
-            print(f"  ⚠  Phiếu phạt: {phieu_phat}")
+            print(f"  Phiếu phạt: {phieu_phat}")
     input("\nNhấn Enter để tiếp tục...")
 
 
