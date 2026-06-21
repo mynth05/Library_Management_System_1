@@ -27,7 +27,7 @@ FINE_LOST             = 300_000.0  # VND phạt mất sách
 
 
 # ─────────────────────────────────────────────────────────────────
-#  Nhóm 7 — Xác thực dữ liệu đầu vào
+# Xác thực dữ liệu đầu vào
 # ─────────────────────────────────────────────────────────────────
 
 class Validator:
@@ -170,13 +170,6 @@ class LogicApp:
                 result.append(b)
         return result
 
-    def tim_sach_theo_tac_gia(self, keyword: str) -> List:
-        result = List()
-        for _, b in self._books.items():
-            if self._match(b.tac_gia, keyword):
-                result.append(b)
-        return result
-
     def tim_sach_theo_the_loai(self, keyword: str) -> List:
         result = List()
         for _, b in self._books.items():
@@ -292,7 +285,6 @@ class LogicApp:
             result.append(r)
         return result
 
-    # Nhóm 4 — tìm kiếm nâng cao
     def tim_doc_gia_theo_ten(self, keyword: str) -> List:
         result = List()
         for _, r in self._readers.items():
@@ -300,19 +292,16 @@ class LogicApp:
                 result.append(r)
         return result
 
-    def loc_doc_gia(self, gioi_tinh: Gender = None, dia_chi: str = None) -> List:
-        """Lọc độc giả theo giới tính và/hoặc địa chỉ (chứa từ khóa)."""
+    def loc_doc_gia(self, gioi_tinh: Gender = None) -> List:
         result = List()
         for _, r in self._readers.items():
             match_gioi_tinh = True
-            match_dia_chi = True
+
             
             if gioi_tinh is not None and r.gioi_tinh != gioi_tinh:
                 match_gioi_tinh = False
-            if dia_chi is not None and not self._match(r.dia_chi, dia_chi):
-                match_dia_chi = False
                 
-            if match_gioi_tinh and match_dia_chi:
+            if match_gioi_tinh:
                 result.append(r)
         return result
 
@@ -705,74 +694,3 @@ class LogicApp:
         for item in pairs[:n]:
             result.append(item)
         return result
-
-    def so_luot_muon_trong_khoang(self, tu_ngay: str, den_ngay: str) -> int:
-        """Số phiếu mượn có ngay_muon trong [tu_ngay, den_ngay]."""
-        if not (Validator.is_valid_date(tu_ngay) and Validator.is_valid_date(den_ngay)):
-            raise ValueError("Dinh dang ngay khong hop le (YYYY-MM-DD).")
-        return sum(1 for _, t in self._tracks.items()
-                   if tu_ngay <= t.ngay_muon <= den_ngay)
-
-    def tien_phat_trong_khoang(self, tu_ngay: str, den_ngay: str) -> float:
-        """Tổng tiền phạt của phiếu được trả trong khoảng ngày."""
-        if not (Validator.is_valid_date(tu_ngay) and Validator.is_valid_date(den_ngay)):
-            raise ValueError("Dinh dang ngay khong hop le (YYYY-MM-DD).")
-        phieu_set = {
-            t.ma_phieu for _, t in self._tracks.items()
-            if t.ngay_tra_thuc_te and tu_ngay <= t.ngay_tra_thuc_te <= den_ngay
-        }
-        return sum(f.tong_tien_phat for _, f in self._fines.items()
-                   if f.ma_phieu in phieu_set)
-
-
-# ─────────────────────────────────────────────────────────────────
-#  Demo khi chạy trực tiếp
-# ─────────────────────────────────────────────────────────────────
-
-if __name__ == "__main__":
-    app = LogicApp()
-
-    s1 = Book("S001", "Lap Trinh Python", "Guido", "CNTT", "NXB KH&KT", 3)
-    s2 = Book("S002", "Cau Truc Du Lieu", "Nguyen A", "CNTT", "NXB GD", 2)
-    print("Them S001:", app.them_sach(s1))
-    print("Them S002:", app.them_sach(s2))
-
-    r1 = Reader("BD001", "Tran Van B", "2000-01-01", Gender.MALE, "Ha Noi", "0912345678")
-    print("Them BD001:", app.them_doc_gia(r1))
-
-    # Cap nhat thong tin sach
-    app.cap_nhat_sach("S001", so_luong=5)
-    print("Cap nhat so_luong S001 -> 5:", app.tim_sach("S001").so_luong)
-
-    # Muon sach
-    print("\nMuon PM001:", app.muon_sach("PM001", "S001", "BD001", "2026-06-01", "2026-06-15"))
-
-    # Gia han
-    print("Gia han PM001:", app.gia_han_muon("PM001", "2026-06-25"))
-
-    # Tra tre
-    print("Tra PM001:", app.tra_sach("PM001", "2026-06-28"))
-
-    # Bao mat
-    app.muon_sach("PM002", "S002", "BD001", "2026-06-01", "2026-06-15")
-    print("Bao mat PM002:", app.bao_mat_sach("PM002", "2026-06-20"))
-
-    # Thong ke
-    print("\n=== THONG KE ===")
-    print("Tong dau sach:", app.tong_dau_sach())
-    print("Tong doc gia :", app.tong_doc_gia())
-    print("Tien phat chua thu:", app.tong_tien_phat_chua_thu(), "VND")
-
-    top = app.top_sach_duoc_muon_nhieu(3)
-    print("\nTop sach duoc muon nhieu:")
-    for sach, luot in top:
-        print(f"  {sach.ten_sach}: {luot} luot")
-
-    # Luu / Tai
-    ok = app.luu_du_lieu("data")
-    print("\nLuu du lieu:", "OK" if ok else "Loi")
-
-    app2 = LogicApp()
-    ok = app2.tai_du_lieu("data")
-    print("Tai du lieu:", "OK" if ok else "Loi")
-    print("Tong sach sau khi tai:", app2.tong_dau_sach())
