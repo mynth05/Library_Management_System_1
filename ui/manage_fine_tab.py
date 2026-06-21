@@ -2,6 +2,7 @@
 
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from custom_structures import List
 from ui.widgets import nhap_chuoi, chon_menu, xac_nhan, in_tieu_de, in_bang_phat
 
 
@@ -11,12 +12,13 @@ from ui.widgets import nhap_chuoi, chon_menu, xac_nhan, in_tieu_de, in_bang_phat
 
 def man_hinh_quan_li_phat(app) -> None:
     """Vòng lặp giao diện quản lí phạt."""
-    MENU = [
+    MENU = List()
+    MENU.extend([
         "Tìm phiếu phạt theo mã",
         "Thanh toán phiếu phạt",
         "Lọc phiếu phạt",
         "Quay lại",
-    ]
+    ])
 
     while True:
         in_tieu_de("QUẢN LÍ PHẠT")
@@ -88,16 +90,20 @@ def _thanh_toan(app) -> None:
 
 def _loc_phieu_phat(app) -> None:
     in_tieu_de("LỌC PHIẾU PHẠT")
-    print("Chọn bộ lọc phiếu phạt:")
-    lua_chon = chon_menu([
+    menu_loc = List()
+    menu_loc.extend([
         "Phiếu phạt đã thanh toán",
         "Phiếu phạt chưa thanh toán",
         "Tất cả phiếu phạt",
     ])
+    lua_chon = chon_menu(menu_loc)
 
     if lua_chon == 1:
         ds = app.lay_tat_ca_phat()
-        ds_loc = [p for p in ds if p.da_thanh_toan]
+        ds_loc = List()
+        for p in ds:
+            if p.da_thanh_toan:
+                ds_loc.append(p)
         in_bang_phat(ds_loc, "Danh sách phiếu phạt đã thanh toán")
     elif lua_chon == 2:
         ds = app.lay_phat_chua_thanh_toan()
