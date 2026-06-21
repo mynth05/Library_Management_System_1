@@ -3,6 +3,7 @@
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from models import Book, BookCondition
+from custom_structures import List
 from ui.widgets import nhap_chuoi, nhap_so_nguyen, chon_menu, xac_nhan, in_tieu_de, in_bang_sach
 
 
@@ -12,7 +13,8 @@ from ui.widgets import nhap_chuoi, nhap_so_nguyen, chon_menu, xac_nhan, in_tieu_
 
 def man_hinh_quan_li_sach(app) -> None:
     """Vòng lặp giao diện quản lí sách."""
-    MENU = [
+    MENU = List()
+    MENU.extend([
         "Thêm sách mới",
         "Cập nhật thông tin sách",
         "Xóa sách",
@@ -21,7 +23,7 @@ def man_hinh_quan_li_sach(app) -> None:
         "Sắp xếp danh sách sách",
         "Xem tất cả sách",
         "Quay lại",
-    ]
+    ])
 
     while True:
         in_tieu_de("QUẢN LÍ SÁCH")
@@ -68,8 +70,9 @@ def _them_sach(app) -> None:
     nha_xuat_ban = nhap_chuoi("Nhà xuất bản: ")
     so_luong     = nhap_so_nguyen("Số lượng (≥ 0): ", min_val=0)
 
-    print("Tình trạng:  1. Mới (new)   2. Đã dùng (used)")
-    tuy_chon = chon_menu(["Mới", "Đã dùng"])
+    menu_tuy_chon = List()
+    menu_tuy_chon.extend(["Mới", "Đã dùng"])
+    tuy_chon = chon_menu(menu_tuy_chon)
     tinh_trang = BookCondition.NEW if tuy_chon == 1 else BookCondition.USED
 
     sach = Book(ma_sach, ten_sach, tac_gia, the_loai, nha_xuat_ban, so_luong, tinh_trang)
@@ -92,7 +95,8 @@ def _cap_nhat_sach(app) -> None:
 
     print(f"\nThông tin hiện tại: {sach}")
     print("\nChọn trường cần cập nhật:")
-    TRUONG_MENU = ["ten_sach", "tac_gia", "the_loai", "nha_xuat_ban", "so_luong", "tinh_trang", "Xong"]
+    TRUONG_MENU = List()
+    TRUONG_MENU.extend(["ten_sach", "tac_gia", "the_loai", "nha_xuat_ban", "so_luong", "tinh_trang", "Xong"])
     while True:
         lua_chon = chon_menu(TRUONG_MENU)
         if lua_chon == len(TRUONG_MENU):  # Xong
@@ -103,7 +107,9 @@ def _cap_nhat_sach(app) -> None:
                 gia_tri = nhap_so_nguyen("Số lượng mới (≥ 0): ", min_val=0)
             elif ten_truong == "tinh_trang":
                 print("1. Mới (new)   2. Đã dùng (used)")
-                c = chon_menu(["Mới", "Đã dùng"])
+                menu_tt = List()
+                menu_tt.extend(["Mới", "Đã dùng"])
+                c = chon_menu(menu_tt)
                 gia_tri = BookCondition.NEW if c == 1 else BookCondition.USED
             else:
                 gia_tri = nhap_chuoi(f"Giá trị mới cho '{ten_truong}': ")
@@ -133,8 +139,9 @@ def _xoa_sach(app) -> None:
 
 def _tim_kiem_sach(app) -> None:
     in_tieu_de("TÌM SÁCH")
-    print("Chọn phương thức tìm kiếm:")
-    lua_chon = chon_menu(["Tìm theo mã sách", "Tìm theo tên sách"])
+    menu_tim = List()
+    menu_tim.extend(["Tìm theo mã sách", "Tìm theo tên sách"])
+    lua_chon = chon_menu(menu_tim)
 
     if lua_chon == 1:
         ma_sach = nhap_chuoi("Nhập mã sách: ")
@@ -153,8 +160,9 @@ def _tim_kiem_sach(app) -> None:
 def _loc_sach(app) -> None:
     in_tieu_de("LỌC SÁCH")
     the_loai = input("Thể loại (Enter để bỏ qua): ").strip() or None
-    print("Tình trạng: 1. Mới  2. Đã dùng  3. Tất cả")
-    c = chon_menu(["Mới", "Đã dùng", "Tất cả"])
+    menu_loc = List()
+    menu_loc.extend(["Mới", "Đã dùng", "Tất cả"])
+    c = chon_menu(menu_loc)
     tinh_trang = {1: BookCondition.NEW, 2: BookCondition.USED, 3: None}[c]
     nha_xuat_ban = input("Nhà xuất bản (Enter để bỏ qua): ").strip() or None
 
@@ -165,11 +173,14 @@ def _loc_sach(app) -> None:
 
 def _sap_xep_sach(app) -> None:
     in_tieu_de("SẮP XẾP SÁCH")
-    print("Sắp xếp theo: 1. Tên sách  2. Tác giả  3. Số lượng")
-    c = chon_menu(["Tên sách", "Tác giả", "Số lượng"])
+    menu_sx = List()
+    menu_sx.extend(["Tên sách", "Tác giả", "Số lượng"])
+    c = chon_menu(menu_sx)
     tieu_chi = {1: "ten_sach", 2: "tac_gia", 3: "so_luong"}[c]
     print("Thứ tự: 1. Tăng dần  2. Giảm dần")
-    giam_dan = chon_menu(["Tăng dần", "Giảm dần"]) == 2
+    menu_tt = List()
+    menu_tt.extend(["Tăng dần", "Giảm dần"])
+    giam_dan = chon_menu(menu_tt) == 2
     ket_qua = app.sap_xep_sach(tieu_chi=tieu_chi, giam_dan=giam_dan)
     in_bang_sach(ket_qua, f"Danh sách sách (sắp xếp theo {tieu_chi})")
     input("\nNhấn Enter để tiếp tục...")
