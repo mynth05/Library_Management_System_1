@@ -17,24 +17,26 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 from app_logic import LogicApp
+from custom_structures import List
 from ui.widgets import chon_menu, in_tieu_de, xoa_man_hinh
 from ui.manage_book_tab import man_hinh_quan_li_sach
 from ui.manage_reader_tab import man_hinh_quan_li_ban_doc
 from ui.manage_borrow_return_tab import man_hinh_quan_li_muon_tra
 from ui.manage_fine_tab import man_hinh_quan_li_phat
-from ui.manage_report_tab import man_hinh_bao_cao_thong_ke
+from ui.manage_record_tab import man_hinh_bao_cao_thong_ke
 
 
 DATA_DIR = os.path.join(_ROOT, "data")
 
-MENU_CHINH = [
+MENU_CHINH = List()
+MENU_CHINH.extend([
     "Quản lí Sách",
     "Quản lí Bạn Đọc",
     "Quản lí Mượn Trả",
     "Quản lí Phạt",
     "Báo Cáo Thống Kê",
     "Thoát",
-]
+])
 
 
 def _khoi_dong(app: LogicApp) -> None:
