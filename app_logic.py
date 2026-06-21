@@ -75,16 +75,19 @@ class Validator:
 #  Hàm tiện ích I/O
 # ─────────────────────────────────────────────────────────────────
 
-def _save_json(path: str, data: list) -> None:
+def _save_json(path: str, data: List) -> None:
     with open(path, "w", encoding="utf-8") as fp:
-        json.dump(data, fp, ensure_ascii=False, indent=2)
+        json.dump(data.to_list(), fp, ensure_ascii=False, indent=2)
 
 
-def _load_json(path: str) -> list:
+def _load_json(path: str) -> List:
     if not os.path.exists(path):
-        return []
+        return List()
     with open(path, "r", encoding="utf-8") as fp:
-        return json.load(fp)
+        raw_list = json.load(fp)
+        custom_list = List()
+        custom_list.extend(raw_list)
+        return custom_list
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -599,14 +602,27 @@ class LogicApp:
         """Lưu 4 file JSON vào thu_muc: books, readers, tracks, fines."""
         try:
             os.makedirs(thu_muc, exist_ok=True)
-            _save_json(os.path.join(thu_muc, "books.json"),
-                       [b.to_dict() for _, b in self._books.items()])
-            _save_json(os.path.join(thu_muc, "readers.json"),
-                       [r.to_dict() for _, r in self._readers.items()])
-            _save_json(os.path.join(thu_muc, "tracks.json"),
-                       [t.to_dict() for _, t in self._tracks.items()])
-            _save_json(os.path.join(thu_muc, "fines.json"),
-                       [f.to_dict() for _, f in self._fines.items()])
+            
+            books_list = List()
+            for _, b in self._books.items():
+                books_list.append(b.to_dict())
+            _save_json(os.path.join(thu_muc, "books.json"), books_list)
+            
+            readers_list = List()
+            for _, r in self._readers.items():
+                readers_list.append(r.to_dict())
+            _save_json(os.path.join(thu_muc, "readers.json"), readers_list)
+            
+            tracks_list = List()
+            for _, t in self._tracks.items():
+                tracks_list.append(t.to_dict())
+            _save_json(os.path.join(thu_muc, "tracks.json"), tracks_list)
+            
+            fines_list = List()
+            for _, f in self._fines.items():
+                fines_list.append(f.to_dict())
+            _save_json(os.path.join(thu_muc, "fines.json"), fines_list)
+            
             return True
         except OSError:
             return False
@@ -660,19 +676,24 @@ class LogicApp:
         for _, t in self._tracks.items():
             dem[t.ma_sach] = dem.get(t.ma_sach, 0) + 1
 
-        pairs = [(self._books.get(ma), cnt)
-                 for ma, cnt in dem.items() if self._books.get(ma)]
+        pairs = List()
+        for ma, cnt in dem.items():
+            book = self._books.get(ma)
+            if book:
+                pairs.append((book, cnt))
 
         # Insertion sort giảm dần
         for i in range(1, len(pairs)):
-            key = pairs[i]; j = i - 1
+            key = pairs[i]
+            j = i - 1
             while j >= 0 and pairs[j][1] < key[1]:
-                pairs[j + 1] = pairs[j]; j -= 1
+                pairs[j + 1] = pairs[j]
+                j -= 1
             pairs[j + 1] = key
 
         result = List()
-        for item in pairs[:n]:
-            result.append(item)
+        for i in range(min(n, len(pairs))):
+            result.append(pairs[i])
         return result
 
     def top_doc_gia_muon_nhieu(self, n: int = 5) -> List:
@@ -681,16 +702,21 @@ class LogicApp:
         for _, t in self._tracks.items():
             dem[t.ma_ban_doc] = dem.get(t.ma_ban_doc, 0) + 1
 
-        pairs = [(self._readers.get(ma), cnt)
-                 for ma, cnt in dem.items() if self._readers.get(ma)]
+        pairs = List()
+        for ma, cnt in dem.items():
+            reader = self._readers.get(ma)
+            if reader:
+                pairs.append((reader, cnt))
 
         for i in range(1, len(pairs)):
-            key = pairs[i]; j = i - 1
+            key = pairs[i]
+            j = i - 1
             while j >= 0 and pairs[j][1] < key[1]:
-                pairs[j + 1] = pairs[j]; j -= 1
+                pairs[j + 1] = pairs[j]
+                j -= 1
             pairs[j + 1] = key
 
         result = List()
-        for item in pairs[:n]:
-            result.append(item)
+        for i in range(min(n, len(pairs))):
+            result.append(pairs[i])
         return result
