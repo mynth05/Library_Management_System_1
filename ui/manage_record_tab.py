@@ -2,6 +2,7 @@
 
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from custom_structures import List
 from ui.widgets import nhap_chuoi, nhap_ngay, nhap_so_nguyen, chon_menu, in_tieu_de
 
 
@@ -11,12 +12,13 @@ from ui.widgets import nhap_chuoi, nhap_ngay, nhap_so_nguyen, chon_menu, in_tieu
 
 def man_hinh_bao_cao_thong_ke(app) -> None:
     """Vòng lặp giao diện báo cáo thống kê."""
-    MENU = [
+    MENU = List()
+    MENU.extend([
         "Tổng quan hệ thống",
         "Top sách được mượn nhiều nhất",
         "Top bạn đọc mượn nhiều nhất",
         "Quay lại",
-    ]
+    ])
 
     while True:
         in_tieu_de("BÁO CÁO THỐNG KÊ")
