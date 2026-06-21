@@ -3,6 +3,7 @@
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from models import Reader, Gender
+from custom_structures import List
 from ui.widgets import (
     nhap_chuoi, nhap_ngay, chon_menu, xac_nhan,
     in_tieu_de, in_bang_ban_doc,
@@ -15,7 +16,8 @@ from ui.widgets import (
 
 def man_hinh_quan_li_ban_doc(app) -> None:
     """Vòng lặp giao diện quản lí bạn đọc."""
-    MENU = [
+    MENU = List()
+    MENU.extend([
         "Thêm bạn đọc mới",
         "Cập nhật thông tin bạn đọc",
         "Xóa bạn đọc",
@@ -23,7 +25,7 @@ def man_hinh_quan_li_ban_doc(app) -> None:
         "Lọc bạn đọc (giới tính)",
         "Xem tất cả bạn đọc",
         "Quay lại",
-    ]
+    ])
 
     while True:
         in_tieu_de("QUẢN LÍ BẠN ĐỌC")
@@ -51,7 +53,9 @@ def man_hinh_quan_li_ban_doc(app) -> None:
 
 def _chon_gioi_tinh() -> Gender:
     print("Giới tính: 1. Nam   2. Nữ   3. Khác")
-    c = chon_menu(["Nam", "Nữ", "Khác"])
+    menu_gioi_tinh = List()
+    menu_gioi_tinh.extend(["Nam", "Nữ", "Khác"])
+    c = chon_menu(menu_gioi_tinh)
     return {1: Gender.MALE, 2: Gender.FEMALE, 3: Gender.OTHER}[c]
 
 
@@ -93,7 +97,8 @@ def _cap_nhat_ban_doc(app) -> None:
         return
 
     print(f"\nThông tin hiện tại: {doc_gia}")
-    TRUONG_MENU = ["ho_ten", "ngay_sinh", "gioi_tinh", "dia_chi", "so_dien_thoai", "Xong"]
+    TRUONG_MENU = List()
+    TRUONG_MENU.extend(["ho_ten", "ngay_sinh", "gioi_tinh", "dia_chi", "so_dien_thoai", "Xong"])
     while True:
         lua_chon = chon_menu(TRUONG_MENU)
         if lua_chon == len(TRUONG_MENU):
@@ -132,8 +137,9 @@ def _xoa_ban_doc(app) -> None:
 
 def _tim_ban_doc(app) -> None:
     in_tieu_de("TÌM BẠN ĐỌC")
-    print("Chọn phương thức tìm kiếm:")
-    lua_chon = chon_menu(["Tìm theo mã bạn đọc", "Tìm theo tên bạn đọc"])
+    menu_tim = List()
+    menu_tim.extend(["Tìm theo mã bạn đọc", "Tìm theo tên bạn đọc"])
+    lua_chon = chon_menu(menu_tim)
 
     if lua_chon == 1:
         ma_ban_doc = nhap_chuoi("Nhập mã bạn đọc: ")
@@ -152,8 +158,9 @@ def _tim_ban_doc(app) -> None:
 
 def _loc_ban_doc(app) -> None:
     in_tieu_de("LỌC BẠN ĐỌC")
-    print("Lọc theo giới tính: 1. Nam  2. Nữ  3. Khác  4. Tất cả")
-    c = chon_menu(["Nam", "Nữ", "Khác", "Tất cả"])
+    menu_loc = List()
+    menu_loc.extend(["Nam", "Nữ", "Khác", "Tất cả"])
+    c = chon_menu(menu_loc)
     gioi_tinh = {1: Gender.MALE, 2: Gender.FEMALE, 3: Gender.OTHER, 4: None}[c]
 
     ket_qua = app.loc_doc_gia(gioi_tinh=gioi_tinh)
